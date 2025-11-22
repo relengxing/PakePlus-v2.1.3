@@ -1,0 +1,1551 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>环形道路相遇问题 - 增强版课件</title>
+    <link href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+    <link rel="stylesheet" href="navigation.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Microsoft YaHei', 'SimHei', sans-serif;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #2196F3 0%, #21CBF3 100%);
+            color: #333;
+            line-height: 1.6;
+            font-size: 24px;
+            overflow-x: hidden;
+        }
+
+        section {
+            width: 100%;
+            min-height: 100vh;
+            padding: 30px 20px;
+            box-sizing: border-box;
+            display: block;
+            position: relative;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 15px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 2rem;
+            opacity: 0.9;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            color: white;
+            text-align: center;
+            width: 100%;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        h2 {
+            color: #2196F3;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            border-bottom: 3px solid #2196F3;
+            padding-bottom: 15px;
+        }
+
+        p {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            text-align: left;
+            line-height: 1.6;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 25px;
+        }
+
+        .card h2 {
+            color: #2196F3;
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+            border-bottom: 3px solid #2196F3;
+            padding-bottom: 10px;
+        }
+
+        .problem-container {
+            background: #f8f9ff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 6px solid #2196F3;
+            font-size: 1.2em;
+        }
+
+        .problem-text {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 6px solid #2196F3;
+            font-size: 1.2em;
+        }
+
+        .problem-text h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.8rem;
+        }
+
+        .problem-text ul,
+        .problem-text ol {
+            margin-left: 25px;
+        }
+
+        .problem-text li {
+            margin-bottom: 10px;
+            color: #555;
+            font-size: 1.2em;
+        }
+
+        .interactive-container {
+            margin: 20px auto;
+            width: 100%;
+            max-width: 1400px;
+        }
+
+        .toggle-btn {
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: 700;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            margin: 3px;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.5px;
+        }
+
+        .toggle-btn::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+            z-index: 0;
+        }
+
+        .toggle-btn:hover::before {
+            width: 500px;
+            height: 500px;
+        }
+
+        .toggle-btn:hover {
+            transform: translateY(-3px) scale(1.01);
+            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.6);
+        }
+
+        .toggle-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .toggle-btn span,
+        .toggle-btn::after {
+            position: relative;
+            z-index: 1;
+        }
+
+        .toggle-btn::after {
+            content: "▶";
+            font-size: 2rem;
+            transition: transform 0.4s ease;
+            font-weight: bold;
+        }
+
+        .toggle-btn.expanded {
+            background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+        }
+
+        .toggle-btn.expanded::after {
+            transform: rotate(90deg);
+        }
+
+        .content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease, padding 0.4s ease, opacity 0.3s ease;
+            background: #f8f9ff;
+            border-radius: 10px;
+            border-left: 6px solid #2196F3;
+            opacity: 0;
+        }
+
+        .content.expanded {
+            max-height: 2000px;
+            padding: 20px;
+            margin-top: 15px;
+            opacity: 1;
+        }
+
+        .content p {
+            margin-bottom: 15px;
+            text-align: left;
+            font-size: 1.2em;
+        }
+
+        .content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .math {
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+        }
+
+        .solution {
+            margin-top: 25px;
+            padding: 25px;
+            background: #e8f5e8;
+            border-radius: 10px;
+            border: 3px solid #4CAF50;
+        }
+
+        .solution h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+
+        .animation-container {
+            background: #f0f8ff;
+            border-radius: 15px;
+            padding: 20px;
+            border: 4px solid #2196F3;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            height: 450px;
+            display: flex;
+        }
+
+        .track-area {
+            flex: 3;
+            position: relative;
+            border-right: 2px dashed #ddd;
+        }
+
+        .distance-area {
+            flex: 2;
+            position: relative;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .track {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 280px;
+            height: 280px;
+            border: 6px dashed #7f8c8d;
+            border-radius: 50%;
+        }
+
+        .start-point {
+            position: absolute;
+            top: 50%;
+            right: 0;
+            width: 20px;
+            height: 20px;
+            background: #FF4444;
+            border-radius: 50%;
+            transform: translate(50%, -50%);
+            box-shadow: 0 0 10px rgba(255, 68, 68, 0.6);
+            z-index: 5;
+        }
+
+        .start-point::before {
+            content: "起点";
+            position: absolute;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #FF4444;
+            white-space: nowrap;
+        }
+
+        .track-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .runner {
+            position: absolute;
+            width: 50px;
+            height: 70px;
+            z-index: 10;
+        }
+
+        .jia {
+            color: #e74c3c;
+        }
+
+        .yi {
+            color: #2ecc71;
+        }
+
+        .runner svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.3));
+        }
+
+        .runner-label {
+            position: absolute;
+            font-size: 1.8rem;
+            font-weight: bold;
+            white-space: nowrap;
+            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
+        }
+
+        .jia-label {
+            color: #e74c3c;
+            top: 15px;
+            left: 15px;
+        }
+
+        .yi-label {
+            color: #2ecc71;
+            top: 55px;
+            left: 15px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .control-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: 700;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin: 3px;
+            flex: 1;
+            max-width: 350px;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .control-btn::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .control-btn:hover::before {
+            width: 400px;
+            height: 400px;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.6);
+        }
+
+        .control-btn:active {
+            transform: translateY(-1px) scale(0.98);
+        }
+
+        .speed-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 15px;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .speed-label {
+            font-size: 1.8rem;
+            font-weight: bold;
+            min-width: 200px;
+        }
+
+        .jia-speed-label {
+            color: #c62828;
+        }
+
+        .yi-speed-label {
+            color: #1b5e20;
+        }
+
+        .speed-slider {
+            flex: 1;
+            height: 10px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: linear-gradient(to right, #e0e0e0 0%, #f5f5f5 100%);
+            border-radius: 8px;
+            outline: none;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
+
+        .speed-slider:hover {
+            background: linear-gradient(to right, #d0d0d0 0%, #e5e5e5 100%);
+        }
+
+        .speed-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: grab;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+            border: 2px solid white;
+        }
+
+        .speed-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+        }
+
+        .speed-slider::-webkit-slider-thumb:active {
+            cursor: grabbing;
+            transform: scale(1.05);
+        }
+
+        .jia-slider::-webkit-slider-thumb {
+            background: linear-gradient(135deg, #FF5252 0%, #c62828 100%);
+            box-shadow: 0 4px 12px rgba(198, 40, 40, 0.5);
+        }
+
+        .jia-slider::-webkit-slider-thumb:hover {
+            box-shadow: 0 6px 16px rgba(198, 40, 40, 0.7);
+        }
+
+        .yi-slider::-webkit-slider-thumb {
+            background: linear-gradient(135deg, #4CAF50 0%, #1b5e20 100%);
+            box-shadow: 0 4px 12px rgba(27, 94, 32, 0.5);
+        }
+
+        .yi-slider::-webkit-slider-thumb:hover {
+            box-shadow: 0 6px 16px rgba(27, 94, 32, 0.7);
+        }
+
+        .speed-value {
+            font-size: 1.8rem;
+            font-weight: 900;
+            min-width: 100px;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            padding: 8px 15px;
+            border-radius: 15px;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+            color: #667eea;
+            letter-spacing: 1px;
+        }
+
+        .distance-display {
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        .distance-bar {
+            height: 35px;
+            margin: 15px 0;
+            border-radius: 18px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            transition: all 0.2s;
+            border: 3px solid transparent;
+        }
+
+        .distance-bar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .jia-distance {
+            background: linear-gradient(to right, #FF5252 0%, #e74c3c 60%, #c62828 100%);
+            border-color: rgba(231, 76, 60, 0.3);
+        }
+
+        .jia-distance:hover {
+            border-color: rgba(231, 76, 60, 0.6);
+        }
+
+        .yi-distance {
+            background: linear-gradient(to right, #4CAF50 0%, #2ecc71 60%, #1b5e20 100%);
+            border-color: rgba(46, 204, 113, 0.3);
+        }
+
+        .yi-distance:hover {
+            border-color: rgba(46, 204, 113, 0.6);
+        }
+
+        .distance-label {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .distance-value {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
+        }
+
+        .equation {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-family: 'Times New Roman', serif;
+            font-size: 1.8rem;
+            text-align: center;
+            border: 3px dashed #2196F3;
+        }
+
+        .equation p {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .step {
+            margin: 30px 0;
+            padding: 30px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+            width: 100%;
+        }
+
+        .step h3 {
+            color: #2196F3;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+
+        .conclusion {
+            background: #e8f5e8;
+            color: #333;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 30px 0;
+            border: 3px solid #4CAF50;
+            font-size: 1.5rem;
+        }
+
+        .conclusion h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+
+        .conclusion p {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        ol, ul {
+            font-size: 1.2em;
+            margin-left: 30px;
+            margin-bottom: 20px;
+        }
+
+        li {
+            margin-bottom: 15px;
+        }
+
+        .speed-display {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin: 30px 0;
+            gap: 20px;
+        }
+
+        .speed-box {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+            border-radius: 25px;
+            padding: 35px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2);
+            flex: 1;
+            transition: all 0.3s;
+            border: 3px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .speed-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.3);
+            border-color: rgba(102, 126, 234, 0.4);
+        }
+
+        .speed-box h3 {
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            color: #667eea;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .speed-value-box {
+            font-size: 3rem;
+            font-weight: 900;
+            color: #FF4444;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(255, 68, 68, 0.2);
+        }
+
+        .yi-speed-value {
+            color: #4CAF50;
+            text-shadow: 2px 2px 4px rgba(76, 175, 80, 0.2);
+        }
+
+        .page-number {
+            position: absolute;
+            bottom: 20px;
+            right: 30px;
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .distance-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+            color: #333;
+        }
+
+    </style>
+</head>
+<body>
+<section data-section="1" id="page1">
+    <div class="container">
+        <div class="header">
+            <h1>环形道路相遇问题</h1>
+            <p>用动画理解二元一次方程组的实际应用</p>
+        </div>
+
+        <div class="card">
+            <h2>📝题目展示</h2>
+            <div class="problem-text">
+                <h3>🏃环形道路相遇问题</h3>
+                <p>聪聪和明明约定在新安公园进行体育锻炼，了解到公园环形跑道一圈的长度是800m，他俩想测试一下自己的速度，聪聪跑步，明明骑自行车。他俩先反向而行，在80s时相遇了；然后再同向而行，发现250s时明明就追上聪聪了</p>
+                <p>问：这两人的速度分别是多少呢？</p>
+            </div>
+
+            <div class="interactive-container">
+                <button class="toggle-btn" data-target="#analysis-1">
+                    <span>问题分析</span>
+                </button>
+                <div class="content" id="analysis-1">
+                    <p>这是一个典型的<strong>环形跑道相遇问题</strong>，涉及两种运动情况：</p>
+                    <ol>
+                        <li><strong>反向运动</strong>：两人相向而行，相遇时走过的路程之和等于跑道长度</li>
+                        <li><strong>同向运动</strong>：两人同向而行，追及时走过的路程之差等于跑道长度</li>
+                    </ol>
+                    <p>我们可以通过建立方程组来解决这个问题。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section data-section="4" id="page4">
+    <div class="container">
+        <div class="card">
+            <h2>🎬 运动过程演示</h2>
+
+            <div class="animation-container">
+                <div class="track-area">
+                    <canvas class="track-canvas" id="track-canvas"></canvas>
+                    <div class="track">
+                        <div class="start-point"></div>
+                    </div>
+                    <div class="runner jia" id="jia-runner">
+                        <svg viewBox="0 0 60 80">
+                            <!-- 小人身体 -->
+                            <circle cx="30" cy="20" fill="#e74c3c" r="10"/>
+                            <!-- 小人躯干 -->
+                            <line stroke="#e74c3c" stroke-width="4" x1="30" x2="30" y1="30" y2="50"/>
+                            <!-- 小人手臂 -->
+                            <line stroke="#e74c3c" stroke-width="3" x1="30" x2="15" y1="35" y2="45"/>
+                            <line stroke="#e74c3c" stroke-width="3" x1="30" x2="45" y1="35" y2="45"/>
+                            <!-- 小人腿 -->
+                            <line stroke="#e74c3c" stroke-width="4" x1="30" x2="20" y1="50" y2="65"/>
+                            <line stroke="#e74c3c" stroke-width="4" x1="30" x2="40" y1="50" y2="65"/>
+                        </svg>
+                    </div>
+                    <div class="runner yi" id="yi-runner">
+                        <svg viewBox="0 0 60 80">
+                            <!-- 小人身体 -->
+                            <circle cx="30" cy="20" fill="#2ecc71" r="10"/>
+                            <!-- 小人躯干 -->
+                            <line stroke="#2ecc71" stroke-width="4" x1="30" x2="30" y1="30" y2="50"/>
+                            <!-- 小人手臂 -->
+                            <line stroke="#2ecc71" stroke-width="3" x1="30" x2="15" y1="35" y2="45"/>
+                            <line stroke="#2ecc71" stroke-width="3" x1="30" x2="45" y1="35" y2="45"/>
+                            <!-- 小人腿 -->
+                            <line stroke="#2ecc71" stroke-width="4" x1="30" x2="20" y1="50" y2="65"/>
+                            <line stroke="#2ecc71" stroke-width="4" x1="30" x2="40" y1="50" y2="65"/>
+                        </svg>
+                    </div>
+                    <div class="runner-label jia-label" id="jia-label">聪聪</div>
+                    <div class="runner-label yi-label" id="yi-label">明明</div>
+                </div>
+
+                <div class="distance-area">
+                    <div class="distance-title">运动距离对比</div>
+                    <div class="distance-display">
+                        <div style="margin-bottom: 10px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                <div class="distance-label" style="position: static;">聪聪</div>
+                                <div style="font-size: 1.4rem; font-weight: bold; color: #e74c3c;">
+                                    <span id="jia-laps">0</span> 圈 + <span id="jia-current-distance">0</span> m
+                                </div>
+                            </div>
+                            <div class="distance-bar jia-distance" id="jia-distance-bar" style="margin: 0;">
+                                <div class="distance-value" id="jia-distance-value" style="">0%</div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                <div class="distance-label" style="position: static;">明明</div>
+                                <div style="font-size: 1.4rem; font-weight: bold; color: #2ecc71;">
+                                    <span id="yi-laps">0</span> 圈 + <span id="yi-current-distance">0</span> m
+                                </div>
+                            </div>
+                            <div class="distance-bar yi-distance" id="yi-distance-bar" style="margin: 0;">
+                                <div class="distance-value" id="yi-distance-value" style="">0%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <div class="controls">
+                <button class="control-btn" id="reverse-btn">反向运动演示</button>
+                <button class="control-btn" id="same-btn">同向运动演示</button>
+                <button class="control-btn" id="pause-btn">暂停</button>
+                <button class="control-btn" id="reset-btn">重置</button>
+                <button class="control-btn" id="show-relation-btn">隐藏数学关系</button>
+            </div>
+
+            <div class="interactive-container">
+                <button class="toggle-btn" data-target="#explanation-1">
+                    <span>动画说明</span>
+                </button>
+                <div class="content" id="explanation-1">
+                    <p><strong>红色小人</strong>代表聪聪（长跑）</p>
+                    <p><strong>绿色小人</strong>代表明明（骑自行车）</p>
+                    <p>环形跑道周长为 \( 800 \) m</p>
+                    <p>使用滑块可以调整两人的速度</p>
+                    <p>点击按钮观察两种运动情况下的相遇和追及过程</p>
+                    <p>轨迹叠加越多，颜色越深，可以看出跑了几圈</p>
+                </div>
+            </div>
+
+            <div class="interactive-container">
+                <button class="toggle-btn" data-target="#explanation-2">
+                    <span>自定义参数</span>
+                </button>
+                <div class="content" id="explanation-2">
+                    <div class="speed-controls">
+                        <div class="speed-control">
+                            <div class="speed-label jia-speed-label">聪聪的速度 (m/s):</div>
+                            <input class="speed-slider jia-slider" id="jia-speed-slider" max="20" min="1" step="0.1" type="range"
+                                   value="3.4">
+                            <div class="speed-value" id="jia-speed-value">3.4</div>
+                        </div>
+                        <div class="speed-control">
+                            <div class="speed-label yi-speed-label">明明的速度 (m/s):</div>
+                            <input class="speed-slider yi-slider" id="yi-speed-slider" max="20" min="1" step="0.1" type="range"
+                                   value="6.6">
+                            <div class="speed-value" id="yi-speed-value">6.6</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section data-section="2" id="page2">
+    <div class="container">
+        <div class="card">
+            <h2>🔍建立数学模型</h2>
+
+            <div class="step">
+                <h3>步骤1：定义变量</h3>
+                <p>设聪聪的速度为 \( v_1 \) m/s，明明的速度为 \( v_2 \) m/s。</p>
+                <p>环形道路长度为 \( 800 \) m。</p>
+            </div>
+
+            <div class="step">
+                <h3>步骤2：反向运动分析</h3>
+                <p>反向而行时，每隔 \( 80 \) s 相遇一次。</p>
+                <p>相遇时，两人走过的路程之和等于跑道长度：</p>
+                <div class="equation">
+                    <p>\[ (v_1 + v_2) \times 80 = 800 \]</p>
+                </div>
+                <p>化简得：</p>
+                <div class="equation">
+                    <p>\[ v_1 + v_2 = 10 \]</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <h3>步骤3：同向运动分析</h3>
+                <p>同向而行时，每隔 \( 250 \) s 明明追上聪聪一次。</p>
+                <p>追及时，明明比聪聪多跑了一圈：</p>
+                <div class="equation">
+                    <p>\[ (v_2 - v_1) \times 250 = 800 \]</p>
+                </div>
+                <p>化简得：</p>
+                <div class="equation">
+                    <p>\[ v_2 - v_1 = 3.2 \]</p>
+                </div>
+            </div>
+
+            <div class="interactive-container">
+                <button class="toggle-btn" data-target="#system-1">
+                    <span>查看方程组</span>
+                </button>
+                <div class="content" id="system-1">
+                    <p>我们得到以下方程组：</p>
+                    <div class="equation">
+                        <p>\[
+                            \begin{cases}
+                            v_1 + v_2 = 10 \\
+                            v_2 - v_1 = 3.2
+                            \end{cases}
+                            \]</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section data-section="3" id="page3">
+    <div class="container">
+        <div class="card">
+            <h2>🧮求解方程组</h2>
+
+            <div class="step">
+<!--                <h3>方法1：加减消元法</h3>-->
+                <p>将两个方程相加：</p>
+                <div class="equation">
+                    <p>\[ (v_1 + v_2) + (v_2 - v_1) = 10 + 3.2 \]</p>
+                    <p>\[ 2v_2 = 13.2 \]</p>
+                    <p>\[ v_2 = 6.6 \]</p>
+                </div>
+
+                <p>将 \( v_2 = 6.6 \) 代入第一个方程：</p>
+                <div class="equation">
+                    <p>\[ v_1 + 6.6 = 10 \]</p>
+                    <p>\[ v_1 = 3.4 \]</p>
+                </div>
+            </div>
+
+<!--            <div class="step">-->
+<!--                <h3>方法2：代入法</h3>-->
+<!--                <p>由第二个方程得：</p>-->
+<!--                <div class="equation">-->
+<!--                    <p>\[ v_2 = v_1 + 5 \]</p>-->
+<!--                </div>-->
+
+<!--                <p>代入第一个方程：</p>-->
+<!--                <div class="equation">-->
+<!--                    <p>\[ v_1 + (v_1 + 5) = 16 \]</p>-->
+<!--                    <p>\[ 2v_1 + 5 = 16 \]</p>-->
+<!--                    <p>\[ 2v_1 = 11 \]</p>-->
+<!--                    <p>\[ v_1 = 5.5 \]</p>-->
+<!--                </div>-->
+
+<!--                <p>再求 \( v_2 \)：</p>-->
+<!--                <div class="equation">-->
+<!--                    <p>\[ v_2 = 5.5 + 5 = 10.5 \]</p>-->
+<!--                </div>-->
+<!--            </div>-->
+
+            <div class="interactive-container">
+                <button class="toggle-btn" data-target="#verification-1">
+                    <span>验证答案</span>
+                </button>
+                <div class="content" id="verification-1">
+                    <div class="solution">
+                        <h3>验证反向运动</h3>
+                        <p>反向而行时，相对速度为：\( 3.4 + 6.6 = 10 \) m/s</p>
+                        <p>相遇时间：\( 800 \div 10 = 80 \) s，符合题意</p>
+                    </div>
+
+                    <div class="solution">
+                        <h3>验证同向运动</h3>
+                        <p>同向而行时，相对速度为：\( 6.6 - 3.4 = 3.2 \) m/s</p>
+                        <p>追及时间：\( 800 \div 3.2 = 250 \) s，符合题意</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<section data-section="5" id="page5">
+    <div class="container">
+        <div class="card">
+            <h2>✅问题解答</h2>
+
+            <div class="speed-display">
+                <div class="speed-box">
+                    <h3>聪聪的速度</h3>
+                    <p class="speed-value-box">\( 3.4 \) m/s</p>
+                    <p>\( = 12.24 \) km/h</p>
+                </div>
+                <div class="speed-box">
+                    <h3>明明的速度</h3>
+                    <p class="speed-value-box yi-speed-value">\( 6.6 \) m/s</p>
+                    <p>\( = 23.76 \) km/h</p>
+                </div>
+            </div>
+
+            <div class="conclusion">
+                <p>聪聪的速度为 <span class="highlight">\( 3.4 \) m/s</span> (12.24 km/h)</p>
+                <p>明明的速度为 <span class="highlight">\( 6.6 \) m/s</span> (23.76 km/h)</p>
+            </div>
+
+            <div class="interactive-container">
+                <button class="toggle-btn" data-target="#summary-1">
+                    <span>解题总结</span>
+                </button>
+                <div class="content" id="summary-1">
+                    <p>解决环形跑道相遇问题的关键：</p>
+                    <ol>
+                        <li>明确两种运动情况：反向运动和同向运动</li>
+                        <li>反向运动：路程和 = 跑道长度</li>
+                        <li>同向运动：路程差 = 跑道长度</li>
+                        <li>建立方程组并求解</li>
+                        <li>验证答案是否符合题意</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // 获取所有切换按钮
+        const toggleButtons = document.querySelectorAll('.toggle-btn');
+
+        // 为每个按钮添加点击事件
+        toggleButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const targetId = this.getAttribute('data-target');
+                const target = document.querySelector(targetId);
+
+                if (target) {
+                    // 切换内容区域的展开/收起状态
+                    target.classList.toggle('expanded');
+
+                    // 更新按钮状态
+                    this.classList.toggle('expanded');
+                }
+            });
+        });
+
+        // 渲染数学公式
+        if (typeof renderMathInElement !== 'undefined') {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: '\\(', right: '\\)', display: false},
+                    {left: '\\[', right: '\\]', display: true}
+                ],
+                throwOnError: false
+            });
+        }
+
+        // 动画演示代码
+        const jiaRunner = document.getElementById('jia-runner');
+        const yiRunner = document.getElementById('yi-runner');
+        const jiaLabel = document.getElementById('jia-label');
+        const yiLabel = document.getElementById('yi-label');
+        const jiaSpeedSlider = document.getElementById('jia-speed-slider');
+        const yiSpeedSlider = document.getElementById('yi-speed-slider');
+        const jiaSpeedValue = document.getElementById('jia-speed-value');
+        const yiSpeedValue = document.getElementById('yi-speed-value');
+        const jiaDistanceBar = document.getElementById('jia-distance-bar');
+        const yiDistanceBar = document.getElementById('yi-distance-bar');
+        const jiaDistanceValue = document.getElementById('jia-distance-value');
+        const yiDistanceValue = document.getElementById('yi-distance-value');
+        const jiaLaps = document.getElementById('jia-laps');
+        const yiLaps = document.getElementById('yi-laps');
+        const jiaCurrentDistance = document.getElementById('jia-current-distance');
+        const yiCurrentDistance = document.getElementById('yi-current-distance');
+        const reverseBtn = document.getElementById('reverse-btn');
+        const sameBtn = document.getElementById('same-btn');
+        const pauseBtn = document.getElementById('pause-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const showRelationBtn = document.getElementById('show-relation-btn');
+        const trackCanvas = document.getElementById('track-canvas');
+        const ctx = trackCanvas.getContext('2d');
+        const trackElement = document.querySelector('.track');
+
+        let animationId = null;
+        let currentMode = null;
+        let startTime = 0;
+        let jiaDistance = 0;
+        let yiDistance = 0;
+        let showTrack = true; // 默认显示轨迹
+        let jiaTrack = [];
+        let yiTrack = [];
+        let frameCount = 0;
+        let lastJiaTrackLength = 0;
+        let lastYiTrackLength = 0;
+        let isPaused = false;
+        let pauseTime = 0;
+        let totalPausedTime = 0;
+        
+        // 热力图：记录每个位置被经过的次数
+        const heatmapSegments = 360; // 将圆分成360段
+        let jiaHeatmap = new Array(heatmapSegments).fill(0);
+        let yiHeatmap = new Array(heatmapSegments).fill(0);
+
+        // 跑道参数
+        const trackRadius = 140; // 轨道半径(像素)
+        const jiaTrackRadius = 135; // 聪聪的轨迹半径（内侧）
+        const yiTrackRadius = 145; // 明明的轨迹半径（外侧）
+        const trackLength = 800; // 跑道周长800米
+        
+        // 初始化Canvas尺寸
+        function initCanvas() {
+            const trackArea = trackElement.parentElement;
+            trackCanvas.width = trackArea.offsetWidth;
+            trackCanvas.height = trackArea.offsetHeight;
+        }
+        
+        // 动态获取跑道中心位置
+        function getTrackCenter() {
+            const rect = trackElement.getBoundingClientRect();
+            const containerRect = trackElement.parentElement.getBoundingClientRect();
+            return {
+                x: rect.left + rect.width / 2 - containerRect.left,
+                y: rect.top + rect.height / 2 - containerRect.top
+            };
+        }
+
+        // 更新速度显示
+        jiaSpeedSlider.addEventListener('input', function () {
+            jiaSpeedValue.textContent = this.value;
+            if (currentMode) resetAnimation();
+        });
+
+        yiSpeedSlider.addEventListener('input', function () {
+            yiSpeedValue.textContent = this.value;
+            if (currentMode) resetAnimation();
+        });
+
+        // 设置小人位置（根据角度）
+        function setRunnerPosition(runner, angle) {
+            const center = getTrackCenter();
+            const x = center.x + trackRadius * Math.cos(angle);
+            const y = center.y + trackRadius * Math.sin(angle);
+            runner.style.left = x + 'px';
+            runner.style.top = y + 'px';
+            runner.style.transform = 'translate(-50%, -50%)';
+        }
+
+        // 重置位置和距离
+        function resetPositions() {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+
+            // 重置小人位置到起点(右侧, 角度为0)
+            setRunnerPosition(jiaRunner, 0);
+            setRunnerPosition(yiRunner, 0);
+
+            // 重置距离
+            jiaDistance = 0;
+            yiDistance = 0;
+
+            // 清空轨迹
+            jiaTrack = [];
+            yiTrack = [];
+            jiaHeatmap.fill(0);
+            yiHeatmap.fill(0);
+            clearCanvas();
+
+            // 重置暂停状态
+            isPaused = false;
+            pauseTime = 0;
+            totalPausedTime = 0;
+            pauseBtn.textContent = '暂停';
+            pauseBtn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+
+            // 显示跑过的距离
+            showDistances();
+
+            currentMode = null;
+            startTime = 0;
+        }
+
+        // 清空画布
+        function clearCanvas() {
+            ctx.clearRect(0, 0, trackCanvas.width, trackCanvas.height);
+        }
+
+        // 根据经过次数获取颜色（红色系，带透明度）
+        function getRedColor(count) {
+            // count: 0-10+，颜色从浅红到深红，透明度从0.3到1.0
+            const baseColors = [
+                { r: 255, g: 102, b: 102 }, // 1次
+                { r: 255, g: 77, b: 77 },   // 2次
+                { r: 255, g: 51, b: 51 },   // 3次
+                { r: 255, g: 26, b: 26 },   // 4次
+                { r: 255, g: 0, b: 0 },     // 5次
+                { r: 230, g: 0, b: 0 },     // 6次
+                { r: 204, g: 0, b: 0 },     // 7次
+                { r: 179, g: 0, b: 0 },     // 8次
+                { r: 153, g: 0, b: 0 },     // 9次
+                { r: 128, g: 0, b: 0 }      // 10次及以上
+            ];
+            const alphas = [0.3, 0.4, 0.5, 0.6, 0.7, 0.75, 0.8, 0.85, 0.9, 1.0];
+            
+            const idx = Math.min(Math.max(count - 1, 0), 9);
+            const color = baseColors[idx];
+            const alpha = alphas[idx];
+            
+            return `rgba(${color.r}, ${color.g}, ${color.b}, ${alpha})`;
+        }
+        
+        // 根据经过次数获取颜色（绿色系，带透明度）
+        function getGreenColor(count) {
+            // count: 0-10+，颜色从浅绿到深绿，透明度从0.3到1.0
+            const baseColors = [
+                { r: 102, g: 255, b: 102 }, // 1次
+                { r: 77, g: 255, b: 77 },   // 2次
+                { r: 51, g: 255, b: 51 },   // 3次
+                { r: 26, g: 255, b: 26 },   // 4次
+                { r: 0, g: 255, b: 0 },     // 5次
+                { r: 0, g: 230, b: 0 },     // 6次
+                { r: 0, g: 204, b: 0 },     // 7次
+                { r: 0, g: 179, b: 0 },     // 8次
+                { r: 0, g: 153, b: 0 },     // 9次
+                { r: 0, g: 128, b: 0 }      // 10次及以上
+            ];
+            const alphas = [0.3, 0.4, 0.5, 0.6, 0.7, 0.75, 0.8, 0.85, 0.9, 1.0];
+            
+            const idx = Math.min(Math.max(count - 1, 0), 9);
+            const color = baseColors[idx];
+            const alpha = alphas[idx];
+            
+            return `rgba(${color.r}, ${color.g}, ${color.b}, ${alpha})`;
+        }
+        
+        // 绘制完整轨迹（根据热力图）
+        function drawFullTrack(isJia) {
+            if (!showTrack) return;
+            
+            const center = getTrackCenter();
+            const radius = isJia ? jiaTrackRadius : yiTrackRadius;
+            const heatmap = isJia ? jiaHeatmap : yiHeatmap;
+            const getColor = isJia ? getRedColor : getGreenColor;
+            
+            ctx.lineWidth = 10;
+            ctx.lineCap = 'round';
+            
+            for (let i = 0; i < heatmapSegments; i++) {
+                if (heatmap[i] === 0) continue;
+                
+                const angle1 = (i / heatmapSegments) * 2 * Math.PI;
+                const angle2 = ((i + 1) / heatmapSegments) * 2 * Math.PI;
+                
+                const x1 = center.x + radius * Math.cos(angle1);
+                const y1 = center.y + radius * Math.sin(angle1);
+                const x2 = center.x + radius * Math.cos(angle2);
+                const y2 = center.y + radius * Math.sin(angle2);
+                
+                ctx.strokeStyle = getColor(heatmap[i]);
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+            }
+        }
+
+        // 显示跑过的距离
+        function showDistances() {
+            const lapDistance = 800; // 一圈的距离
+            
+            // 计算圈数和当前圈内的距离
+            const jiaFullLaps = Math.floor(jiaDistance / lapDistance);
+            const jiaCurrentDist = jiaDistance % lapDistance;
+            const jiaPercent = (jiaCurrentDist / lapDistance) * 100;
+            
+            const yiFullLaps = Math.floor(yiDistance / lapDistance);
+            const yiCurrentDist = yiDistance % lapDistance;
+            const yiPercent = (yiCurrentDist / lapDistance) * 100;
+            
+            // 更新圈数显示
+            jiaLaps.textContent = jiaFullLaps;
+            yiLaps.textContent = yiFullLaps;
+            
+            // 更新当前圈内距离
+            jiaCurrentDistance.textContent = jiaCurrentDist.toFixed(1);
+            yiCurrentDistance.textContent = yiCurrentDist.toFixed(1);
+            
+            // 更新进度条百分比显示
+            jiaDistanceValue.textContent = jiaPercent.toFixed(0) + '%';
+            yiDistanceValue.textContent = yiPercent.toFixed(0) + '%';
+
+            // 更新距离条长度（0-100%）
+            jiaDistanceBar.style.background = `linear-gradient(to right, #ff9f9f 0%, #e74c3c ${jiaPercent}%, #ddd ${jiaPercent}%, #ddd 100%)`;
+            yiDistanceBar.style.background = `linear-gradient(to right, #a3f7a3 0%, #2ecc71 ${yiPercent}%, #ddd ${yiPercent}%, #ddd 100%)`;
+        }
+
+        // 重置动画
+        function resetAnimation() {
+            if (currentMode) {
+                if (currentMode === 'reverse') {
+                    reverseMotion();
+                } else if (currentMode === 'same') {
+                    sameDirectionMotion();
+                }
+            }
+        }
+
+        // 反向运动演示
+        function reverseMotion() {
+            if (currentMode === 'reverse') return;
+            resetPositions();
+            currentMode = 'reverse';
+            startTime = Date.now();
+            jiaTrack = [];
+            yiTrack = [];
+            frameCount = 0;
+            lastJiaTrackLength = 0;
+            lastYiTrackLength = 0;
+            totalPausedTime = 0;
+            jiaHeatmap.fill(0);
+            yiHeatmap.fill(0);
+
+            const jiaSpeed = parseFloat(jiaSpeedSlider.value);
+            const yiSpeed = parseFloat(yiSpeedSlider.value);
+            
+            // 在动画开始时计算一次中心点，动画过程中保持不变
+            const center = getTrackCenter();
+
+            function animate() {
+                if (isPaused) {
+                    animationId = requestAnimationFrame(animate);
+                    return;
+                }
+                
+                const elapsedTime = (Date.now() - startTime - totalPausedTime) / 100;
+
+                // 计算跑过的距离(米)
+                jiaDistance = jiaSpeed * elapsedTime;
+                yiDistance = yiSpeed * elapsedTime;
+
+                // 根据距离计算角度(跑完400米 = 2π弧度)
+                const jiaAngle = (jiaDistance / trackLength) * 2 * Math.PI;
+                const jiaX = center.x + trackRadius * Math.cos(jiaAngle);
+                const jiaY = center.y + trackRadius * Math.sin(jiaAngle);
+                
+                // 聪聪的轨迹位置（内侧）
+                const jiaTrackX = center.x + jiaTrackRadius * Math.cos(jiaAngle);
+                const jiaTrackY = center.y + jiaTrackRadius * Math.sin(jiaAngle);
+
+                // 明明的位置（逆时针）
+                const yiAngle = -(yiDistance / trackLength) * 2 * Math.PI;
+                const yiX = center.x + trackRadius * Math.cos(yiAngle);
+                const yiY = center.y + trackRadius * Math.sin(yiAngle);
+                
+                // 明明的轨迹位置（外侧）
+                const yiTrackX = center.x + yiTrackRadius * Math.cos(yiAngle);
+                const yiTrackY = center.y + yiTrackRadius * Math.sin(yiAngle);
+
+                jiaRunner.style.left = jiaX + 'px';
+                jiaRunner.style.top = jiaY + 'px';
+                jiaRunner.style.transform = 'translate(-50%, -50%)'; // 保持竖直
+
+                yiRunner.style.left = yiX + 'px';
+                yiRunner.style.top = yiY + 'px';
+                yiRunner.style.transform = 'translate(-50%, -50%)'; // 保持竖直
+
+                // 记录轨迹（每帧更新热力图）
+                if (showTrack) {
+                    // 计算当前角度对应的热力图索引
+                    // 聪聪顺时针
+                    const normalizedJiaAngle = ((jiaAngle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+                    const jiaSegment = Math.floor(normalizedJiaAngle / (2 * Math.PI) * heatmapSegments);
+                    
+                    // 明明逆时针，需要转换为正角度
+                    const normalizedYiAngle = ((yiAngle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+                    const yiSegment = Math.floor(normalizedYiAngle / (2 * Math.PI) * heatmapSegments);
+                    
+                    // 更新热力图
+                    if (jiaSegment >= 0 && jiaSegment < heatmapSegments) {
+                        jiaHeatmap[jiaSegment]++;
+                    }
+                    if (yiSegment >= 0 && yiSegment < heatmapSegments) {
+                        yiHeatmap[yiSegment]++;
+                    }
+                    
+                    // 每5帧重绘一次轨迹（加快绘制频率）
+                    frameCount++;
+                    if (frameCount % 5 === 0) {
+                        clearCanvas();
+                        drawFullTrack(true);  // 绘制聪聪的轨迹
+                        drawFullTrack(false); // 绘制明明的轨迹
+                    }
+                }
+
+                showDistances();
+
+                animationId = requestAnimationFrame(animate);
+            }
+
+            animate();
+        }
+
+        // 同向运动演示
+        function sameDirectionMotion() {
+            if (currentMode === 'same') return;
+            resetPositions();
+            currentMode = 'same';
+            startTime = Date.now();
+            jiaTrack = [];
+            yiTrack = [];
+            frameCount = 0;
+            lastJiaTrackLength = 0;
+            lastYiTrackLength = 0;
+            totalPausedTime = 0;
+            jiaHeatmap.fill(0);
+            yiHeatmap.fill(0);
+
+            const jiaSpeed = parseFloat(jiaSpeedSlider.value);
+            const yiSpeed = parseFloat(yiSpeedSlider.value);
+            
+            // 在动画开始时计算一次中心点，动画过程中保持不变
+            const center = getTrackCenter();
+
+            function animate() {
+                if (isPaused) {
+                    animationId = requestAnimationFrame(animate);
+                    return;
+                }
+                
+                const elapsedTime = (Date.now() - startTime - totalPausedTime) / 100;
+
+                // 计算跑过的距离(米)
+                jiaDistance = jiaSpeed * elapsedTime;
+                yiDistance = yiSpeed * elapsedTime;
+
+                // 根据距离计算角度(跑完400米 = 2π弧度)
+                const jiaAngle = (jiaDistance / trackLength) * 2 * Math.PI;
+                const jiaX = center.x + trackRadius * Math.cos(jiaAngle);
+                const jiaY = center.y + trackRadius * Math.sin(jiaAngle);
+                
+                // 聪聪的轨迹位置（内侧）
+                const jiaTrackX = center.x + jiaTrackRadius * Math.cos(jiaAngle);
+                const jiaTrackY = center.y + jiaTrackRadius * Math.sin(jiaAngle);
+
+                // 明明的位置（顺时针，但速度更快）
+                const yiAngle = (yiDistance / trackLength) * 2 * Math.PI;
+                const yiX = center.x + trackRadius * Math.cos(yiAngle);
+                const yiY = center.y + trackRadius * Math.sin(yiAngle);
+                
+                // 明明的轨迹位置（外侧）
+                const yiTrackX = center.x + yiTrackRadius * Math.cos(yiAngle);
+                const yiTrackY = center.y + yiTrackRadius * Math.sin(yiAngle);
+
+                jiaRunner.style.left = jiaX + 'px';
+                jiaRunner.style.top = jiaY + 'px';
+                jiaRunner.style.transform = 'translate(-50%, -50%)'; // 保持竖直
+
+                yiRunner.style.left = yiX + 'px';
+                yiRunner.style.top = yiY + 'px';
+                yiRunner.style.transform = 'translate(-50%, -50%)'; // 保持竖直
+
+                // 记录轨迹（每帧更新热力图）
+                if (showTrack) {
+                    // 计算当前角度对应的热力图索引
+                    // 聪聪和明明都顺时针
+                    const normalizedJiaAngle = ((jiaAngle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+                    const jiaSegment = Math.floor(normalizedJiaAngle / (2 * Math.PI) * heatmapSegments);
+                    
+                    const normalizedYiAngle = ((yiAngle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+                    const yiSegment = Math.floor(normalizedYiAngle / (2 * Math.PI) * heatmapSegments);
+                    
+                    // 更新热力图
+                    if (jiaSegment >= 0 && jiaSegment < heatmapSegments) {
+                        jiaHeatmap[jiaSegment]++;
+                    }
+                    if (yiSegment >= 0 && yiSegment < heatmapSegments) {
+                        yiHeatmap[yiSegment]++;
+                    }
+                    
+                    // 每5帧重绘一次轨迹（加快绘制频率）
+                    frameCount++;
+                    if (frameCount % 5 === 0) {
+                        clearCanvas();
+                        drawFullTrack(true);  // 绘制聪聪的轨迹
+                        drawFullTrack(false); // 绘制明明的轨迹
+                    }
+                }
+
+                showDistances();
+
+                animationId = requestAnimationFrame(animate);
+            }
+
+            animate();
+        }
+
+        // 显示/隐藏数学关系（显示轨迹）
+        function toggleMathRelation() {
+            showTrack = !showTrack;
+            if (showTrack) {
+                showRelationBtn.textContent = '隐藏数学关系';
+                showRelationBtn.style.background = 'linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%)';
+            } else {
+                showRelationBtn.textContent = '显示数学关系';
+                showRelationBtn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                clearCanvas();
+            }
+        }
+
+        // 暂停/继续
+        function togglePause() {
+            if (!currentMode) return; // 如果没有运动，不处理
+            
+            isPaused = !isPaused;
+            if (isPaused) {
+                pauseTime = Date.now();
+                pauseBtn.textContent = '继续';
+                pauseBtn.style.background = 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)';
+            } else {
+                totalPausedTime += Date.now() - pauseTime;
+                pauseBtn.textContent = '暂停';
+                pauseBtn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            }
+        }
+
+        // 绑定按钮事件
+        showRelationBtn.addEventListener('click', toggleMathRelation);
+        reverseBtn.addEventListener('click', reverseMotion);
+        sameBtn.addEventListener('click', sameDirectionMotion);
+        pauseBtn.addEventListener('click', togglePause);
+        resetBtn.addEventListener('click', resetPositions);
+
+        // 初始化Canvas和位置
+        initCanvas();
+        resetPositions();
+        
+        // 初始化数学关系按钮状态
+        showRelationBtn.textContent = '隐藏数学关系';
+        showRelationBtn.style.background = 'linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%)';
+    });
+</script>
+<script src="navigation.js"></script>
+</body>
+</html>
