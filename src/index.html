@@ -1,32 +1,311 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <link rel="stylesheet" href="styles.css" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>PakePlus App</title>
-        <script type="module" src="/main.js" defer></script>
-    </head>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>数学教材封面</title>
+    <link href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+    <link rel="stylesheet" href="navigation.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", "SimHei", sans-serif;
+        }
 
-    <body>
-        <main class="container">
-            <h1>Welcome to PakePlus</h1>
-            <form class="row" id="greet-form">
-                <input id="inputValue" placeholder="Enter a something..." />
-            </form>
-            <div class="resultBox">
-                <span>result: </span>
-                <span id="result"></span>
+        body {
+            background-color: #f5f7fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            /* padding: 50px; */
+
+        }
+
+        section {
+            width: 100%;
+            min-height: 100vh;
+            /* padding: 20px; */
+            box-sizing: border-box;
+        }
+
+        .cover-container {
+            width: 100%;
+            height: 100vh;
+            background: linear-gradient(135deg, #1a5fb4 0%, #3584e4 100%);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            padding: 40px;
+        }
+
+        .cover-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect x="0" y="0" width="100" height="100" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="2"/><circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="2"/><line x1="0" y1="0" x2="100" y2="100" stroke="rgba(255,255,255,0.1)" stroke-width="2"/><line x1="100" y1="0" x2="0" y2="100" stroke="rgba(255,255,255,0.1)" stroke-width="2"/></svg>');
+            opacity: 0.3;
+        }
+
+        .cover-title {
+            font-size: 3.5rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 1;
+        }
+
+        .cover-subtitle {
+            font-size: 1.8rem;
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .cover-info {
+            width: 30%;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(5px);
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 40px;
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .info-item {
+            display: flex;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .info-label {
+            width: 120px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .info-content {
+            flex-grow: 1;
+        }
+
+        .math-elements {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 150px;
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            padding: 0 50px 30px;
+        }
+
+        .math-element {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            transform: rotate(45deg);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .math-element:nth-child(2) {
+            transform: rotate(-15deg);
+        }
+
+        .math-element:nth-child(3) {
+            transform: rotate(15deg);
+        }
+
+        .publisher {
+            position: absolute;
+            bottom: 30px;
+            right: 40px;
+            font-size: 1rem;
+            opacity: 0.8;
+            z-index: 1;
+        }
+
+        .directory-btn {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 50px;
+            padding: 18px 45px;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: 1px;
+            overflow: hidden;
+        }
+
+        .directory-btn::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .directory-btn:hover::before {
+            left: 100%;
+        }
+
+        .directory-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(-50%) translateY(-5px) scale(1.05);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.8);
+        }
+
+        .directory-btn:active {
+            transform: translateX(-50%) translateY(-2px) scale(1.02);
+        }
+
+        .directory-btn-icon {
+            font-size: 1.5rem;
+            display: inline-block;
+            transition: transform 0.4s ease;
+        }
+
+        .directory-btn:hover .directory-btn-icon {
+            transform: rotate(15deg) scale(1.1);
+        }
+
+        .directory-btn-text {
+            position: relative;
+            z-index: 1;
+        }
+
+        @media (max-width: 768px) {
+            .cover-title {
+                font-size: 2.5rem;
+            }
+
+            .cover-subtitle {
+                font-size: 1.4rem;
+            }
+
+            .info-item {
+                font-size: 1rem;
+            }
+
+            .math-element {
+                width: 60px;
+                height: 60px;
+                font-size: 1.2rem;
+            }
+
+            .directory-btn {
+                padding: 15px 35px;
+                font-size: 1rem;
+                bottom: 30px;
+            }
+
+            .directory-btn-icon {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<section data-section="0" id="cover">
+    <div class="cover-container">
+        <h1 class="cover-title">二元一次方程组的应用</h1>
+        <h2 class="cover-subtitle">第三课时-行程问题</h2>
+
+        <div class="cover-info">
+            <div class="info-item">
+                <div class="info-label">教材版本：</div>
+                <div class="info-content">北师大版（2024）</div>
             </div>
-            <div class="invokeBox">
-                <button id="openUrl">open_url_browser</button>
-                <button id="openUrlNew">open_url_new</button>
-                <button id="runCommand">run_command</button>
-                <button id="downloadFile">download_file</button>
-                <button id="getExeDir">get_exe_dir</button>
-                <button id="getEnvVar">get_env_var</button>
-                <button id="findPort">find_port</button>
+            <div class="info-item">
+                <div class="info-label">学科：</div>
+                <div class="info-content">数学</div>
             </div>
-        </main>
-    </body>
+            <div class="info-item">
+                <div class="info-label">年级：</div>
+                <div class="info-content">八年级</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">教师姓名：</div>
+                <div class="info-content">刘如芳</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">所在单位：</div>
+                <div class="info-content">海旺学校</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">日期：</div>
+                <div class="info-content">2025年11月22日</div>
+            </div>
+        </div>
+
+        <div class="math-elements">
+            <div class="math-element">x+y</div>
+            <div class="math-element">=</div>
+            <div class="math-element">10</div>
+        </div>
+
+        <div class="publisher">海旺学校 数学教研组</div>
+        
+        <button class="directory-btn" onclick="window.location.href='1.目录页.html'">
+            <span class="directory-btn-icon">📚</span>
+            <span class="directory-btn-text">进入课件目录</span>
+        </button>
+    </div>
+</section>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // 渲染数学公式
+        if (typeof renderMathInElement !== 'undefined') {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: '\\(', right: '\\)', display: false},
+                    {left: '\\[', right: '\\]', display: true}
+                ],
+                throwOnError: false
+            });
+        }
+    });
+</script>
+<!-- <script src="navigation.js"></script> -->
+</body>
 </html>
