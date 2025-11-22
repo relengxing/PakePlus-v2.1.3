@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>火车过隧道问题 - AI辅助教学</title>
+    <!-- KaTeX CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+    <link rel="stylesheet" href="navigation.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #2196F3 0%, #21CBF3 100%);
+            color: #333;
+            line-height: 1.6;
+            font-size: 24px;
+            /* 增大基础字体大小 */
+        }
+
+        section {
+            width: 100%;
+            min-height: 100vh;
+            padding: 40px 20px;
+            /* 增加上下内边距 */
+            box-sizing: border-box;
+        }
+
+        .container {
+            max-width: 100%;
+            /* 占满整个宽度 */
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
+            /* 增大标题字体 */
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 2rem;
+            /* 增大副标题字体 */
+            opacity: 0.9;
+            text-align: center;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            /* 增加内边距 */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 40px;
+        }
+
+        .card h2 {
+            color: #2196F3;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            /* 增大卡片标题字体 */
+            border-bottom: 3px solid #2196F3;
+            /* 加粗边框 */
+            padding-bottom: 15px;
+        }
+
+        .problem-text {
+            background: #f8f9ff;
+            padding: 30px;
+            /* 增加内边距 */
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 6px solid #2196F3;
+            /* 加粗边框 */
+            font-size: 1.2em;
+            /* 增大字体 */
+        }
+
+        .problem-text h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            /* 增大标题字体 */
+        }
+
+        .problem-text ul,
+        .problem-text ol {
+            margin-left: 30px;
+            /* 增加缩进 */
+        }
+
+        .problem-text li {
+            margin-bottom: 15px;
+            color: #555;
+            font-size: 1.2em;
+            /* 增大字体 */
+        }
+
+        /* 动画容器样式 */
+        .animation-container {
+            background: #f0f8ff;
+            border-radius: 15px;
+            padding: 30px;
+            /* 增加内边距 */
+            border: 4px solid #2196F3;
+            /* 加粗边框 */
+            position: relative;
+            overflow: hidden;
+        }
+
+        .animation-title {
+            text-align: center;
+            color: #2196F3;
+            margin-bottom: 30px;
+            font-weight: bold;
+            font-size: 1.8rem;
+            /* 增大字体 */
+        }
+
+        .tunnel-scene {
+            position: relative;
+            height: 300px;
+            /* 增加高度 */
+            margin: 30px 0;
+            background: linear-gradient(to bottom, #87CEEB 0%, #98FB98 100%);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 3px solid #ddd;
+        }
+
+        .ground {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 120px;
+            /* 增加高度 */
+            background: #8B4513;
+            border-top: 4px solid #654321;
+            /* 加粗边框 */
+        }
+
+        .tunnel {
+            position: absolute;
+            bottom: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 500px;
+            /* 增加宽度 */
+            height: 150px;
+            /* 增加高度 */
+            background: #333;
+            border-radius: 75px 75px 0 0;
+            border: 4px solid #000;
+            /* 加粗边框 */
+            box-shadow: inset 0 -15px 40px rgba(0, 0, 0, 0.6);
+        }
+
+        .tunnel::before {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: -30px;
+            right: -30px;
+            height: 30px;
+            background: #654321;
+            border-radius: 15px;
+        }
+
+        .train {
+            position: absolute;
+            bottom: 90px;
+            left: -150px;
+            width: 120px;
+            /* 增加宽度 */
+            height: 60px;
+            /* 增加高度 */
+            background: linear-gradient(45deg, #FF6B6B, #FF8E53);
+            border-radius: 10px;
+            border: 4px solid #333;
+            /* 加粗边框 */
+            transition: left 2s ease-in-out;
+            z-index: 10;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .train::before {
+            content: '';
+            position: absolute;
+            right: -18px;
+            top: 15px;
+            width: 24px;
+            height: 30px;
+            background: #333;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .train::after {
+            content: '🚂';
+            position: absolute;
+            right: 10px;
+            top: -10px;
+            font-size: 36px;
+            /* 增大图标 */
+            transform: scaleX(-1);
+        }
+
+        .train-wheels {
+            position: absolute;
+            bottom: -12px;
+            left: 10px;
+            right: 10px;
+            height: 15px;
+            background: repeating-linear-gradient(90deg, #333 0px, #333 12px, transparent 12px, transparent 24px);
+        }
+
+        /* 步骤指示器样式 */
+        .animation-steps {
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 25px;
+            /* 增加间距 */
+            flex-wrap: wrap;
+        }
+
+        .step-dot {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            border: 4px solid transparent;
+            background: linear-gradient(white, white) padding-box,
+                        linear-gradient(135deg, #667eea 0%, #764ba2 100%) border-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 24px;
+            color: #667eea;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .step-dot::before {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            z-index: -1;
+            transition: transform 0.3s;
+        }
+
+        .step-dot:hover::before {
+            transform: scale(1.15);
+        }
+
+        .step-dot.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: scale(1.15);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+            }
+            50% {
+                box-shadow: 0 8px 35px rgba(102, 126, 234, 0.8);
+            }
+        }
+
+        .step-dot.completed {
+            background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+            color: white;
+            border: 4px solid #4CAF50;
+        }
+
+        .step-dot.completed::after {
+            content: "✓";
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 28px;
+            height: 28px;
+            background: #4CAF50;
+            border-radius: 50%;
+            border: 3px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.5);
+        }
+
+        .step-dot:hover {
+            transform: translateY(-5px) scale(1.08);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .step-dot::after {
+            content: attr(data-description);
+            position: absolute;
+            bottom: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 16px;
+            /* 增大字体 */
+            white-space: nowrap;
+            opacity: 0.7;
+        }
+
+        .measurement-line {
+            position: absolute;
+            height: 4px;
+            /* 加粗线条 */
+            transition: all 0.3s ease;
+        }
+
+        .measurement-line.train-length {
+            background: #FF4444;
+        }
+
+        .measurement-line.tunnel-length {
+            background: #2196F3;
+        }
+
+        .measurement-line.total-distance {
+            background: #4CAF50;
+            height: 5px;
+            /* 加粗线条 */
+        }
+
+        .measurement-line.inner-distance {
+            background: #FF9800;
+            height: 5px;
+            /* 加粗线条 */
+        }
+
+        .measurement-text {
+            position: absolute;
+            padding: 10px 18px;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: 800;
+            border: 3px solid;
+            transform: translateX(-50%);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s;
+            letter-spacing: 0.5px;
+        }
+
+        .measurement-text:hover {
+            transform: translateX(-50%) translateY(-3px) scale(1.05);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+        }
+
+        .measurement-text.train-length {
+            color: white;
+            background: linear-gradient(135deg, #FF5252 0%, #FF1744 100%);
+            border-color: #FF1744;
+        }
+
+        .measurement-text.tunnel-length {
+            color: white;
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            border-color: #1976D2;
+        }
+
+        .measurement-text.total-distance {
+            color: white;
+            background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+            border-color: #2E7D32;
+        }
+
+        .measurement-text.inner-distance {
+            color: white;
+            background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+            border-color: #F57C00;
+        }
+
+        .phase-indicator {
+            text-align: center;
+            margin: 25px 0;
+            padding: 20px 30px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            border-radius: 20px;
+            font-weight: 800;
+            color: #667eea;
+            font-size: 1.6rem;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+            letter-spacing: 0.5px;
+            transition: all 0.3s;
+        }
+
+        .phase-indicator:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .control-panel {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 18px 35px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.3rem;
+            font-weight: 700;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin: 5px;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .btn::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn:active {
+            transform: translateY(-1px) scale(0.98);
+        }
+
+        .btn:disabled {
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            opacity: 0.6;
+        }
+
+        .btn:disabled:hover {
+            transform: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:disabled::before {
+            display: none;
+        }
+
+        .equation {
+            background: #f8f9ff;
+            padding: 20px;
+            /* 增加内边距 */
+            border-radius: 10px;
+            margin: 20px 0;
+            font-family: 'Times New Roman', serif;
+            font-size: 1.8rem;
+            /* 增大字体 */
+            text-align: center;
+            border: 3px dashed #2196F3;
+            /* 加粗边框 */
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 4px 8px;
+            /* 增加内边距 */
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 1.1em;
+            /* 增大字体 */
+        }
+
+        .dimensions-display {
+            background: #e8f5e8;
+            padding: 20px;
+            /* 增加内边距 */
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+            border: 3px solid #4CAF50;
+            /* 加粗边框 */
+            font-size: 1.5rem;
+            /* 增大字体 */
+        }
+
+        .phase-1 {
+            background: #ffebee;
+        }
+
+        .phase-2 {
+            background: #e8f5e8;
+        }
+
+        .phase-3 {
+            background: #fff3e0;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            background: #2c3e50;
+            color: white;
+            margin-top: 30px;
+            font-size: 1.2rem;
+            /* 增大字体 */
+        }
+
+
+        @media (max-width: 768px) {
+            body {
+                font-size: 20px;
+                /* 调整移动端字体大小 */
+            }
+
+            .header h1 {
+                font-size: 2.5rem;
+            }
+
+            .header p {
+                font-size: 1.5rem;
+            }
+
+            .card h2 {
+                font-size: 2rem;
+            }
+
+            .tunnel-scene {
+                height: 250px;
+            }
+
+            .tunnel {
+                width: 350px;
+                height: 120px;
+            }
+
+            .train {
+                width: 100px;
+                height: 50px;
+                left: -120px;
+            }
+
+            .train::after {
+                font-size: 28px;
+            }
+
+            .step-indicator {
+                gap: 15px;
+            }
+
+            .step-dot {
+                width: 60px;
+                height: 60px;
+                font-size: 16px;
+            }
+
+            .control-panel {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .btn {
+                padding: 12px 24px;
+                font-size: 1.1rem;
+            }
+
+            .measurement-text {
+                font-size: 14px;
+                padding: 4px 8px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<section data-section="1" id="section1">
+    <div class="container">
+        <div class="header">
+            <h1>🚂 AI辅助教学：火车过隧道问题</h1>
+            <p>用动画理解二元一次方程组的实际应用</p>
+        </div>
+
+        <div class="card">
+            <h2>📝题目展示</h2>
+            <div class="problem-text">
+                <h3>火车过隧道问题</h3>
+                <p><strong>题目：</strong>一列火车以40 m/s的速度经过一个隧道，从车头进入隧道到车尾驶出隧道，共用时30s，其中火车全身都在隧道里的时间是20s，求隧道和火车的长度。
+                </p>
+
+                <p><strong>已知条件：</strong></p>
+                <ul>
+                    <li>火车速度：40 m/s（匀速运动）</li>
+                    <li>总通过时间：30秒</li>
+                    <li>完全在隧道内时间：20秒</li>
+                </ul>
+
+                <p><strong>思考问题：</strong></p>
+                <ol>
+                    <li>这个问题涉及哪些量？</li>
+                    <li>这些量之间有怎样的关系？</li>
+                    <li>如何用图示说明整个过程？</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section data-section="2" id="section2">
+    <div class="container">
+        <div class="card">
+            <h2>🔍分析问题中的量和关系</h2>
+
+            <p><strong>问题分析：</strong></p>
+            <ul>
+                <li>这是一个关于<span class="highlight">运动路程和时间</span>的问题</li>
+                <li>火车通过隧道可以分为<span class="highlight">三个阶段</span></li>
+                <li>需要建立长度与时间的关系</li>
+            </ul>
+
+            <p><strong>设定变量：</strong></p>
+            <ul>
+                <li>设隧道长度为 <span class="highlight">\(x\)</span> 米</li>
+                <li>设火车长度为 <span class="highlight">\(y\)</span> 米</li>
+            </ul>
+
+            <div class="equation">
+                <p><strong>关键理解：</strong></p>
+                <p>根据 <strong>路程 = 速度 × 时间</strong>（<span style="color: #1976D2; font-style: italic;">物理中的匀速直线运动公式 \( s = v \times t \)</span>）
+                </p>
+                <p>我们需要分析火车在不同阶段行驶的路程</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section data-section="3" id="section3">
+    <div class="container">
+        <div class="card">
+            <h2>🎬 火车过隧道动画演示</h2>
+            <!-- 动画演示区域 -->
+            <div class="animation-section">
+                <div class="card animation-card">
+                    <div class="animation-container">
+                        <div class="animation-title">分步展示火车通过隧道的完整过程</div>
+
+                        <div class="tunnel-scene" id="tunnelScene">
+                            <div class="ground"></div>
+                            <div class="tunnel" id="tunnel"></div>
+                            <div class="train" id="train">
+                                <div class="train-wheels"></div>
+                            </div>
+
+                            <!-- 基础测量线条 -->
+                            <div class="measurement-line train-length" id="trainLength" style="display: none;">
+                            </div>
+                            <div class="measurement-text train-length" id="trainLengthText" style="display: none;">
+                                火车长度 y
+                            </div>
+
+                            <div class="measurement-line tunnel-length" id="tunnelLength" style="display: none;">
+                            </div>
+                            <div class="measurement-text tunnel-length" id="tunnelLengthText"
+                                 style="display: none;">隧道长度 x
+                            </div>
+
+                            <!-- 关键路程测量线 -->
+                            <div class="measurement-line total-distance" id="totalDistance" style="display: none;">
+                            </div>
+                            <div class="measurement-text total-distance" id="totalDistanceText"
+                                 style="display: none;">总路程 x+y
+                            </div>
+
+                            <div class="measurement-line inner-distance" id="innerDistance" style="display: none;">
+                            </div>
+                            <div class="measurement-text inner-distance" id="innerDistanceText"
+                                 style="display: none;">内部路程 x-y
+                            </div>
+                        </div>
+
+                        <div class="phase-indicator" id="phaseIndicator">
+                            准备开始：火车即将进入隧道
+                        </div>
+
+                        <div class="animation-steps" id="animationSteps">
+                            <div class="step-indicator">
+                                <!-- <div class="step-dot active" data-step="0" data-description="准备阶段">准备</div> -->
+                                <div class="step-dot" data-description="车头进入" data-step="1">1</div>
+                                <div class="step-dot" data-description="完全进入" data-step="2">2</div>
+                                <div class="step-dot" data-description="车头出来" data-step="3">3</div>
+                                <div class="step-dot" data-description="车尾出来" data-step="4">4</div>
+                                <div class="step-dot" data-description="完全离开" data-step="5">5</div>
+                            </div>
+                        </div>
+
+                        <div class="control-panel">
+                            <button class="btn" onclick="nextAnimationStep()">下一步</button>
+                            <button class="btn" onclick="resetAnimation()">重置</button>
+                            <button class="btn" onclick="showEducationalMeasurements()">显示数学关系</button>
+                            <button class="btn" onclick="showBasicMeasurements()">显示基础测量</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="problem-text phase-1">
+                <h4>🔵 阶段1：车头进入到车尾进入</h4>
+                <p>• 从车头刚进入隧道到车尾刚进入隧道</p>
+                <p>• 火车行驶距离 = <strong>火车长度 \(y\)</strong></p>
+            </div>
+
+            <div class="problem-text phase-2">
+                <h4>🟢 阶段2：完全在隧道内</h4>
+                <p>• 火车完全在隧道内运行</p>
+                <p>• 火车行驶距离 = <strong>隧道长度 - 火车长度 = \(x - y\)</strong></p>
+                <p>• 耗时 = <strong>20秒</strong>（题目给出）</p>
+            </div>
+
+            <div class="problem-text phase-3">
+                <h4>🟡 阶段3：车头出来到车尾出来</h4>
+                <p>• 从车头刚出隧道到车尾刚出隧道</p>
+                <p>• 火车行驶距离 = <strong>火车长度 \(y\)</strong></p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section data-section="4" id="section4">
+    <div class="container">
+        <div class="card">
+            <h2>📐建立二元一次方程组</h2>
+
+            <p><strong>根据两个关键时间建立方程：</strong></p>
+
+            <div class="equation">
+                <p><strong>方程1：总通过时间 = 30秒</strong></p>
+                <p>🟢 火车从开始进入到完全离开的总路程 = <span class="highlight">\(x + y\)</span></p>
+                <p><small>💡 为什么是 \(x + y\)？观察动画：火车需要"穿越整个隧道长度\(x\)" +
+                    "自身完全通过所需的额外长度\(y\)"</small></p>
+                <p>根据 路程 = 速度 × 时间：</p>
+                <p>\[x + y = 40 \times 30\]</p>
+                <p><strong>\[x + y = 1200\]</strong></p>
+            </div>
+
+            <div class="equation">
+                <p><strong>方程2：完全在隧道内时间 = 20秒</strong></p>
+                <p>🟠 火车完全在隧道内行驶的路程 = <span class="highlight">\(x - y\)</span></p>
+                <p><small>💡 为什么是 \(x - y\)？观察动画：从"车尾刚进入"到"车头刚出来"，火车行驶距离 = 隧道长度\(x\) -
+                    火车长度\(y\)</small></p>
+                <p>根据 路程 = 速度 × 时间：</p>
+                <p>\[x - y = 40 \times 20\]</p>
+                <p><strong>\[x - y = 800\]</strong></p>
+            </div>
+
+            <div class="equation">
+                <p><strong>得到二元一次方程组：</strong></p>
+                \[
+                \begin{cases}
+                x + y = 1200 & \text{(1) [总通过]} \\
+                x - y = 800 & \text{(2) [完全内部]}
+                \end{cases}
+                \]
+            </div>
+
+            <p><strong>理解要点：</strong></p>
+            <ul>
+                <li><strong>\(x + y\)：</strong>表示火车从头部进入到尾部离开的总行程</li>
+                <li><strong>\(x - y\)：</strong>表示火车完全在隧道内时的行程</li>
+                <li>这两个量分别对应30秒和20秒的行程</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<section data-section="5" id="section5">
+    <div class="container">
+        <div class="card">
+            <h2>🧮求解二元一次方程组</h2>
+
+            <p><strong>使用加减消元法求解：</strong></p>
+
+            <div class="equation">
+                <p>方程组：</p>
+                \[
+                \begin{cases}
+                x + y = 1200 & \text{(1)} \\
+                x - y = 800 & \text{(2)}
+                \end{cases}
+                \]
+            </div>
+
+            <p><strong>步骤1：两式（1）+（2）消除y得</strong></p>
+            <div class="equation">
+                \[(x + y) + (x - y) = 1200 + 800\]
+                \[2x = 2000\]
+                \[\boxed{x = 1000 \text{ 米}}\]
+            </div>
+
+            <p><strong>步骤2：将x值代入方程(1)求y</strong></p>
+            <div class="equation">
+                \[1000 + y = 1200\]
+                \[y = 1200 - 1000\]
+                \[\boxed{y = 200 \text{ 米}}\]
+            </div>
+
+            <div class="dimensions-display">
+                <h4>✅ 最终答案</h4>
+                <p><strong>隧道长度：</strong>\(x = 1000\) 米</p>
+                <p><strong>火车长度：</strong>\(y = 200\) 米</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section data-section="6" id="section6">
+    <div class="container">
+        <div class="card">
+            <h2>✅验证答案</h2>
+
+<!--            <p><strong>验证计算结果：</strong></p>-->
+
+<!--            <div class="equation">-->
+<!--                <p><strong>验证方程(1)：\(x + y = 1200\)</strong></p>-->
+<!--                <p>\(1000 + 200 = 1200\) ✓</p>-->
+<!--            </div>-->
+
+<!--            <div class="equation">-->
+<!--                <p><strong>验证方程(2)：\(x - y = 800\)</strong></p>-->
+<!--                <p>\(1000 - 200 = 800\) ✓</p>-->
+<!--            </div>-->
+
+            <div class="equation">
+                <p><strong>验证计算结果：</strong></p>
+                <p>• 总通过时间：\(\frac{1000 + 200}{40} = \frac{1200}{40} = 30\) 秒 ✓</p>
+                <p>• 完全内部时间：\(\frac{1000 - 200}{40} = \frac{800}{40} = 20\) 秒 ✓</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+<section data-section="7" id="section7">
+    <div class="container">
+        <div class="card">
+            <h2>✅总结</h2>
+            
+            <div class="problem-text" style="background: #e8f5e8; border-left-color: #4CAF50;">
+                <h3>💡 问题的数学本质</h3>
+                <p><strong>• 运动问题：</strong>利用路程 = 速度 × 时间建立等量关系</p>
+                <p><strong>• 几何理解：</strong>火车通过隧道的路程分析是关键</p>
+                <p><strong>• 代数方法：</strong>二元一次方程组是解决此类问题的有力工具</p>
+                <p><strong>• 实际应用：</strong>类似问题在交通、工程中经常出现</p>
+            </div>
+
+<!--            <div class="problem-text" style="background: #fff3cd; border-left-color: #ff9800;">-->
+<!--                <h3>🎯 AI辅助教学的价值</h3>-->
+<!--                <p><strong>• 可视化：</strong>动画演示让抽象的运动过程变得直观</p>-->
+<!--                <p><strong>• 分步引导：</strong>复杂问题分解为容易理解的步骤</p>-->
+<!--                <p><strong>• 互动体验：</strong>学生可以反复观看，按自己节奏学习</p>-->
+<!--                <p><strong>• 概念建模：</strong>帮助学生理解数学与现实世界的联系</p>-->
+<!--            </div>-->
+
+<!--            <div class="problem-text" style="background: #acdfeb; border-left-color: #8ad4a3;">-->
+<!--                <h4>🚀 拓展思考</h4>-->
+<!--                <p>• 如果火车速度变为50 m/s，其他条件不变，结果如何？</p>-->
+<!--                <p>• 两列火车相向而行通过隧道，如何分析？</p>-->
+<!--                <p>• 现实中的过铁路桥问题有什么特点？</p>-->
+<!--            </div>-->
+        </div>
+    </div>
+</section>
+
+<!-- 
+    <footer>
+        <p>数学课后练习 &copy; 2025|海旺学校-刘如芳</p>
+    </footer> -->
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        // 渲染数学公式
+        if (typeof renderMathInElement !== 'undefined') {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: '\\(', right: '\\)', display: false},
+                    {left: '\\[', right: '\\]', display: true}
+                ]
+            });
+        }
+
+        // 存储当前播放的audio
+        let currentAudio = null;
+
+        // 播放音频
+        function playAudio(audio) {
+            // 如果已经有audio在播放，先暂停
+            if (currentAudio && currentAudio !== audio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0; // 可选：重置播放进度
+            }
+
+            // 播放新的audio并更新currentAudio
+            audio.play();
+            currentAudio = audio;
+        }
+
+        // 动画相关变量
+        let animationState = 'ready';
+        let currentAnimationStep = 0;
+        let isStepByStepMode = false;
+
+        // 动画步骤配置
+        const animationSteps = [
+            // {
+            //     name: '准备阶段',
+            //     description: '火车即将进入隧道',
+            //     trainPosition: -150,
+            //     className: 'phase-indicator'
+            // },
+            {
+                name: '步骤1：车头刚进入',
+                description: '火车头刚好进入隧道口(🤖AI配音)',
+                trainPosition: 150,
+                className: 'phase-indicator phase-1',
+                mp3: new Audio('./火车资源/火车头刚好进入隧道.mp3')
+            },
+            {
+                name: '步骤2：完全进入隧道',
+                description: '火车车尾刚好进入隧道入口，整个火车都在隧道内(🤖AI配音)',
+                trainPosition: 250,
+                className: 'phase-indicator phase-2',
+                mp3: new Audio('./火车资源/火车车尾刚好进入隧道入口，整个火车都在隧道内.mp3')
+            },
+            {
+                name: '步骤3：车头刚出隧道',
+                description: '火车头刚好出隧道口，但车身仍在隧道内(🤖AI配音)',
+                trainPosition: 550,
+                className: 'phase-indicator phase-3',
+                mp3: new Audio('./火车资源/火车头刚好出隧道口，但车身仍在隧道内.mp3')
+            },
+            {
+                name: '步骤4：车尾刚出隧道',
+                description: '火车车尾刚好离开隧道出口，火车完全离开隧道了(🤖AI配音)',
+                trainPosition: 650,
+                className: 'phase-indicator phase-1',
+                mp3: new Audio('./火车资源/火车车尾刚好离开隧道出口，火车完全离开隧道了.mp3')
+            },
+            {
+                name: '步骤5：火车远离',
+                description: '火车继续向前行驶，完全离开(🤖AI配音)',
+                trainPosition: 800,
+                className: 'phase-indicator',
+                mp3: new Audio('./火车资源/火车继续向前行驶，完全离开.mp3')
+
+            }
+        ];
+
+        // 下一步动画
+        function nextAnimationStep() {
+            if (animationState !== 'running' && !isStepByStepMode) {
+                startStepByStepAnimation();
+                return;
+            }
+
+            if (currentAnimationStep < animationSteps.length - 1) {
+                currentAnimationStep++;
+                goToAnimationStep(currentAnimationStep);
+            } else {
+                animationState = 'finished';
+                updatePhaseIndicator('动画完成！火车已完全通过隧道', 'phase-indicator');
+            }
+        }
+
+        // 跳转到指定动画步骤
+        function goToAnimationStep(stepIndex) {
+            if (stepIndex < 0 || stepIndex >= animationSteps.length) return;
+
+            currentAnimationStep = stepIndex;
+            const step = animationSteps[stepIndex];
+            const train = document.getElementById('train');
+
+            const trainPosition = calculateTrainPosition(stepIndex);
+            train.style.left = trainPosition + 'px';
+
+            updatePhaseIndicator(step.description, step.className);
+            updateStepIndicator(stepIndex);
+            // 播放音频
+            const mp3 = step.mp3
+            playAudio(mp3)
+
+        }
+
+        // 计算准确的火车位置
+        function calculateTrainPosition(stepIndex) {
+            const scene = document.getElementById('tunnelScene');
+            const tunnel = document.getElementById('tunnel');
+
+            if (!scene || !tunnel) return animationSteps[stepIndex].trainPosition;
+
+            const sceneRect = scene.getBoundingClientRect();
+            const tunnelRect = tunnel.getBoundingClientRect();
+
+            const tunnelLeftInScene = tunnelRect.left - sceneRect.left;
+            const tunnelRightInScene = tunnelRect.right - sceneRect.left;
+
+            const trainWidth = 120;
+
+            switch (stepIndex) {
+                case 0:
+                    return tunnelLeftInScene - trainWidth;
+                case 1:
+                    return tunnelLeftInScene;
+                case 2:
+                    return tunnelRightInScene - trainWidth;
+                case 3:
+                    return tunnelRightInScene;
+                case 4:
+                    return tunnelRightInScene + 100;
+                default:
+                    return animationSteps[stepIndex].trainPosition;
+            }
+        }
+
+        // 更新阶段指示器
+        function updatePhaseIndicator(text, className) {
+            const indicator = document.getElementById('phaseIndicator');
+            indicator.textContent = text;
+            indicator.className = className;
+        }
+
+        // 更新步骤指示器
+        function updateStepIndicator(activeStep) {
+            const stepDots = document.querySelectorAll('.step-dot');
+            stepDots.forEach((dot, index) => {
+                dot.classList.remove('active', 'completed');
+                if (index === activeStep) {
+                    dot.classList.add('active');
+                } else if (index < activeStep) {
+                    dot.classList.add('completed');
+                }
+            });
+        }
+
+        // 开始分步动画
+        function startStepByStepAnimation() {
+            isStepByStepMode = true;
+            resetAnimation();
+            animationState = 'running';
+
+            setTimeout(() => {
+                goToAnimationStep(0);
+            }, 100);
+        }
+
+        // 重置动画
+        function resetAnimation() {
+            animationState = 'ready';
+            currentAnimationStep = 1;
+            isStepByStepMode = false;
+
+            const train = document.getElementById('train');
+            train.style.transition = 'none';
+            train.style.left = '-150px';
+
+            setTimeout(() => {
+                train.style.transition = 'left 2s ease-in-out';
+            }, 50);
+
+            updatePhaseIndicator('准备开始：火车即将进入隧道', 'phase-indicator');
+            updateStepIndicator(0);
+            hideMeasurements();
+        }
+
+        // 显示基础测量（火车长度和隧道长度）
+        function showBasicMeasurements() {
+            hideMeasurements();
+
+            const scene = document.getElementById('tunnelScene');
+            const tunnel = document.getElementById('tunnel');
+            const train = document.getElementById('train');
+
+            if (!scene || !tunnel || !train) return;
+
+            const sceneRect = scene.getBoundingClientRect();
+            const tunnelRect = tunnel.getBoundingClientRect();
+            const trainRect = train.getBoundingClientRect();
+
+            const tunnelLeftInScene = tunnelRect.left - sceneRect.left;
+            const trainLeftInScene = trainRect.left - sceneRect.left;
+
+            const trainLength = document.getElementById('trainLength');
+            const trainLengthText = document.getElementById('trainLengthText');
+            const tunnelLength = document.getElementById('tunnelLength');
+            const tunnelLengthText = document.getElementById('tunnelLengthText');
+
+            // 火车长度测量线
+            trainLength.style.display = 'block';
+            trainLength.style.bottom = '70px';
+            trainLength.style.left = Math.max(10, trainLeftInScene) + 'px';
+            trainLength.style.width = '120px';
+            trainLength.style.transform = 'none';
+
+            trainLengthText.style.display = 'block';
+            trainLengthText.style.bottom = '45px';
+            trainLengthText.style.left = Math.max(70, trainLeftInScene + 60) + 'px';
+            trainLengthText.style.transform = 'none';
+            trainLengthText.textContent = '火车长度 y';
+
+            // 隧道长度测量线
+            tunnelLength.style.display = 'block';
+            tunnelLength.style.top = '60px';
+            tunnelLength.style.left = tunnelLeftInScene + 'px';
+            tunnelLength.style.width = '500px';
+            tunnelLength.style.transform = 'none';
+
+            tunnelLengthText.style.display = 'block';
+            tunnelLengthText.style.top = '35px';
+            tunnelLengthText.style.left = (tunnelLeftInScene + 250) + 'px';
+            tunnelLengthText.style.transform = 'translateX(-50%)';
+            tunnelLengthText.textContent = '隧道长度 x';
+        }
+
+        // 显示教学用测量（重点展示x+y和x-y的概念）
+        function showEducationalMeasurements() {
+            hideMeasurements();
+
+            const scene = document.getElementById('tunnelScene');
+            const tunnel = document.getElementById('tunnel');
+
+            if (!scene || !tunnel) return;
+
+            const sceneRect = scene.getBoundingClientRect();
+            const tunnelRect = tunnel.getBoundingClientRect();
+
+            const tunnelLeftInScene = tunnelRect.left - sceneRect.left;
+            const tunnelRightInScene = tunnelRect.right - sceneRect.left;
+            const sceneWidth = sceneRect.width;
+
+            const totalDistance = document.getElementById('totalDistance');
+            const totalDistanceText = document.getElementById('totalDistanceText');
+            const innerDistance = document.getElementById('innerDistance');
+            const innerDistanceText = document.getElementById('innerDistanceText');
+            const trainLength = document.getElementById('trainLength');
+            const trainLengthText = document.getElementById('trainLengthText');
+            const tunnelLength = document.getElementById('tunnelLength');
+            const tunnelLengthText = document.getElementById('tunnelLengthText');
+
+            // 1. 总路程 x+y （从车头开始进入到车尾完全离开的距离）
+            const totalStart = Math.max(20, tunnelLeftInScene);
+            const totalEnd = Math.min(sceneWidth - 20, tunnelRightInScene + 120);
+            const totalWidth = totalEnd - totalStart;
+
+            totalDistance.style.display = 'block';
+            totalDistance.style.top = '20px';
+            totalDistance.style.left = totalStart + 'px';
+            totalDistance.style.width = totalWidth + 'px';
+            totalDistance.style.transform = 'none';
+
+            totalDistanceText.style.display = 'block';
+            totalDistanceText.style.top = '-5px';
+            totalDistanceText.style.left = (totalStart + totalWidth / 2) + 'px';
+            totalDistanceText.style.transform = 'translateX(-50%)';
+            totalDistanceText.innerHTML = '<strong>总路程 x+y</strong><br>火车从车头进入到车尾离开';
+
+            // 2. 内部路程 x-y （火车完全在隧道内时的行驶距离）
+            const innerStart = tunnelLeftInScene;
+            const innerEnd = tunnelRightInScene;
+            const innerWidth = innerEnd - innerStart;
+
+            innerDistance.style.display = 'block';
+            innerDistance.style.bottom = '25px';
+            innerDistance.style.left = innerStart + 'px';
+            innerDistance.style.width = innerWidth + 'px';
+            innerDistance.style.transform = 'none';
+
+            innerDistanceText.style.display = 'block';
+            innerDistanceText.style.bottom = '0px';
+            innerDistanceText.style.left = (innerStart + innerWidth / 2) + 'px';
+            innerDistanceText.style.transform = 'translateX(-50%)';
+            innerDistanceText.innerHTML = '<strong>内部路程 x-y</strong><br>火车完全在隧道内的距离';
+
+            // 3. 显示基础长度作为参考
+            trainLength.style.display = 'block';
+            trainLength.style.bottom = '70px';
+            trainLength.style.left = '350px';
+            trainLength.style.width = '120px';
+            trainLength.style.transform = 'none';
+
+            trainLengthText.style.display = 'block';
+            trainLengthText.style.bottom = '80px';
+            trainLengthText.style.left = '420px';
+            trainLengthText.style.transform = 'translateX(-50%)';
+            trainLengthText.textContent = 'y';
+
+            tunnelLength.style.display = 'block';
+            tunnelLength.style.top = '370px';
+            tunnelLength.style.left = tunnelLeftInScene + 'px';
+            tunnelLength.style.width = '500px';
+            tunnelLength.style.transform = 'none';
+
+            tunnelLengthText.style.display = 'block';
+            tunnelLengthText.style.top = '350px';
+            tunnelLengthText.style.left = (tunnelLeftInScene + 250) + 'px';
+            tunnelLengthText.style.transform = 'translateX(-50%)';
+            tunnelLengthText.textContent = 'x = 1000m';
+
+            // 更新阶段指示器来解释概念
+            const indicator = document.getElementById('phaseIndicator');
+            indicator.innerHTML = `
+                <div style="text-align: left; line-height: 1.6;">
+                    <div style="color: #4CAF50; font-weight: bold;">🟢 行驶时间是30秒时的总路程 x+y = ?</div>
+                    <div style="margin-bottom: 8px;">从车头开始进入隧道到车尾完全离开隧道的总距离</div>
+                    <div style="color: #FF9800; font-weight: bold;">🟠 行驶时间是20秒时的总路程 x-y = ?</div>
+                    <div>火车完全在隧道内运行的距离:隧道长度减去火车长度</div>
+                </div>
+            `;
+        }
+
+        // 隐藏所有测量线条
+        function hideMeasurements() {
+            document.getElementById('trainLength').style.display = 'none';
+            document.getElementById('trainLengthText').style.display = 'none';
+            document.getElementById('tunnelLength').style.display = 'none';
+            document.getElementById('tunnelLengthText').style.display = 'none';
+            document.getElementById('totalDistance').style.display = 'none';
+            document.getElementById('totalDistanceText').style.display = 'none';
+            document.getElementById('innerDistance').style.display = 'none';
+            document.getElementById('innerDistanceText').style.display = 'none';
+        }
+
+        // 添加动画步骤指示器点击事件
+        function addAnimationStepClickEvents() {
+            const stepDots = document.querySelectorAll('.step-dot');
+            stepDots.forEach((dot, index) => {
+                dot.addEventListener('click', () => {
+                    if (!isStepByStepMode) {
+                        isStepByStepMode = true;
+                        animationState = 'running';
+                    }
+
+                    setTimeout(() => {
+                        goToAnimationStep(index);
+                    }, 50);
+                });
+            });
+        }
+
+        // 窗口大小变化时重新计算位置
+        function handleResize() {
+            if (isStepByStepMode && animationState === 'running') {
+                setTimeout(() => {
+                    goToAnimationStep(currentAnimationStep);
+                }, 100);
+            }
+        }
+
+        // 页面加载时的初始化
+        // 初始化动画相关事件
+        addAnimationStepClickEvents();
+        window.addEventListener('resize', handleResize);
+
+        // 确保函数全局可访问
+        window.nextAnimationStep = nextAnimationStep;
+        window.showEducationalMeasurements = showEducationalMeasurements;
+        window.showBasicMeasurements = showBasicMeasurements;
+        window.resetAnimation = resetAnimation;
+
+        // 渲染数学公式
+        if (typeof renderMathInElement !== 'undefined') {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: '\\(', right: '\\)', display: false},
+                    {left: '\\[', right: '\\]', display: true}
+                ]
+            });
+        }
+    });
+
+</script>
+<script src="navigation.js"></script>
+</body>
+
+</html>
