@@ -1,0 +1,1582 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>汽车上下坡问题 - 交互式动画</title>
+    <link href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+    <link rel="stylesheet" href="navigation.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #2196F3 0%, #21CBF3 100%);
+            color: #333;
+            line-height: 1.6;
+            font-size: 24px;
+            margin: 0;
+            padding: 0;
+        }
+
+        section {
+            width: 100%;
+            padding: 40px 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 2rem;
+            opacity: 0.9;
+            text-align: center;
+        }
+
+        .content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 40px;
+        }
+
+        .card h2 {
+            color: #2196F3;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            border-bottom: 3px solid #2196F3;
+            padding-bottom: 15px;
+        }
+
+        .problem-text {
+            background: #f8f9ff;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 6px solid #2196F3;
+            font-size: 1.2em;
+        }
+
+        .problem-text h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+
+        .problem-text p {
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .simulation-area {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .animation-container {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .animation-title {
+            text-align: center;
+            color: #2196F3;
+            margin-bottom: 30px;
+            font-weight: bold;
+            font-size: 1.8rem;
+        }
+
+        .hill-scene {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            background: linear-gradient(to bottom, #87CEEB, #E0F7FA);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            border: 3px solid #3498db;
+        }
+
+        .sky {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 70%;
+            background: linear-gradient(to bottom, #1e90ff, #87ceeb);
+        }
+
+        .ground {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 30%;
+            background: linear-gradient(to top, #8bc34a, #7cb342);
+        }
+
+        .hill-svg-container {
+            position: absolute;
+            bottom: 30%;
+            width: 100%;
+            height: 200px;
+        }
+
+        .hill-svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .car {
+            position: absolute;
+            width: 80px;
+            height: 40px;
+            background: #e74c3c;
+            border-radius: 10px 10px 0 0;
+            transition: all 0.05s linear;
+            z-index: 10;
+            transform-origin: center center;
+            /* 移除之前的 bottom 定位，改用 top 和 left */
+            top: 0;
+            left: 0;
+        }
+
+        .car-body {
+            position: absolute;
+            width: 100%;
+            height: 70%;
+            background: #e74c3c;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .car-top {
+            position: absolute;
+            top: 8px;
+            left: 10px;
+            width: 40px;
+            height: 20px;
+            background: #3498db;
+            border-radius: 5px;
+        }
+
+        .wheel {
+            position: absolute;
+            bottom: -8px;
+            width: 16px;
+            height: 16px;
+            background: #2c3e50;
+            border-radius: 50%;
+            border: 2px solid #7f8c8d;
+        }
+
+        .wheel.front {
+            left: 15px;
+        }
+
+        .wheel.back {
+            right: 15px;
+        }
+
+        .info-panel {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-top: 25px;
+        }
+
+        .info-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .info-card::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: rotate(45deg);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% {
+                transform: translateX(-100%) translateY(-100%) rotate(45deg);
+            }
+            100% {
+                transform: translateX(100%) translateY(100%) rotate(45deg);
+            }
+        }
+
+        .info-card:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.6);
+        }
+
+        .info-card > div:first-child {
+            font-size: 1.1rem;
+            font-weight: 600;
+            opacity: 0.95;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .info-value {
+            font-size: 2.4rem;
+            font-weight: 900;
+            margin-top: 8px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        .controls-panel {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .control-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+            font-size: 1.2rem;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .slider {
+            flex: 1;
+            height: 12px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: linear-gradient(to right, #e0e0e0 0%, #f5f5f5 100%);
+            border-radius: 10px;
+            outline: none;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
+
+        .slider:hover {
+            background: linear-gradient(to right, #d0d0d0 0%, #e5e5e5 100%);
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            cursor: grab;
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.5);
+            transition: all 0.3s;
+            border: 3px solid #fff;
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 6px 15px rgba(102, 126, 234, 0.7);
+        }
+
+        .slider::-webkit-slider-thumb:active {
+            cursor: grabbing;
+            transform: scale(1.1);
+        }
+
+        .slider-value {
+            min-width: 70px;
+            text-align: center;
+            font-weight: 800;
+            color: #667eea;
+            font-size: 1.4rem;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            padding: 8px 15px;
+            border-radius: 15px;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+        }
+
+        .time-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+        }
+
+        .time-rate-control {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .time-rate-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .time-rate-btn {
+            padding: 8px 15px;
+            background: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .time-rate-btn:hover {
+            background: #27ae60;
+        }
+
+        .time-rate-btn.active {
+            background: #e74c3c;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 18px 35px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.3rem;
+            font-weight: 700;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            flex: 1;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        button::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        button:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.6);
+        }
+
+        button:active {
+            transform: translateY(-1px) scale(0.98);
+        }
+
+        button:disabled {
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            opacity: 0.6;
+        }
+
+        button:disabled:hover {
+            transform: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .calculation-area {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .step {
+            margin: 20px 0;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            border-left: 5px solid #3498db;
+            font-size: 1.2em;
+        }
+
+        .step-number {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            background: #3498db;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 50px;
+            margin-right: 15px;
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+
+        .equation {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-align: center;
+            overflow-x: auto;
+            font-size: 1.8rem;
+            border: 3px dashed #2196F3;
+        }
+
+        .final-answer {
+            background: #e8f5e9;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+            border-left: 5px solid #4caf50;
+        }
+
+        .final-answer h3 {
+            color: #2e7d32;
+            margin-bottom: 15px;
+        }
+
+        .diagram-line {
+            stroke: #e74c3c;
+            stroke-width: 2;
+            stroke-dasharray: 5, 5;
+        }
+
+        .diagram-text {
+            fill: #2c3e50;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .formula-text {
+            fill: #fff;
+            font-size: 16px;
+            font-weight: 700;
+            font-family: 'Microsoft YaHei', 'Times New Roman', serif;
+            filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.6));
+        }
+
+        .formula-background {
+            fill: rgba(33, 150, 243, 0.95);
+            stroke: #fff;
+            stroke-width: 2;
+            rx: 10;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+        }
+
+
+        .path-marker {
+            fill: #fff;
+            font-size: 32px;
+            font-weight: 800;
+            filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.8));
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .collapsible-section {
+            margin-top: 20px;
+            border-top: 2px solid #eee;
+            padding-top: 20px;
+        }
+
+        .collapsible-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            padding: 18px 25px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            border-radius: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid transparent;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+        }
+
+        .collapsible-header:hover {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+            border-color: rgba(102, 126, 234, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+        }
+
+        .collapsible-header h3 {
+            margin: 0;
+            color: #667eea;
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .collapsible-icon {
+            font-size: 1.5rem;
+            transition: transform 0.3s;
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .collapsible-header:hover .collapsible-icon {
+            transform: scale(1.2);
+        }
+
+        .collapsible-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .collapsible-content.expanded {
+            max-height: 1000px;
+            transition: max-height 0.3s ease-in;
+        }
+
+        .preset-selector {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .preset-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .preset-btn {
+            flex: 1;
+            padding: 18px 35px;
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.3rem;
+            font-weight: 700;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 6px 15px rgba(52, 152, 219, 0.4);
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.5px;
+        }
+
+        .preset-btn::before {
+            content: "🚗";
+            position: absolute;
+            left: 20px;
+            font-size: 1.5rem;
+            transition: transform 0.3s;
+        }
+
+        .preset-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.6);
+        }
+
+        .preset-btn:hover::before {
+            transform: translateX(5px);
+        }
+
+        .preset-btn.active {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            box-shadow: 0 8px 20px rgba(231, 76, 60, 0.5);
+        }
+
+        .preset-btn.active::before {
+            content: "✓";
+        }
+
+
+        @media (max-width: 768px) {
+            .simulation-area {
+                min-width: 100%;
+            }
+
+            .info-panel {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .controls {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<section data-section="1" id="section1">
+    <div class="container">
+        <div class="header">
+            <h1>🚗 汽车上下坡问题</h1>
+            <p>用动画理解二元一次方程组的实际应用</p>
+        </div>
+
+        <div class="card">
+            <h2>📝 题目展示</h2>
+            <div class="problem-text">
+                <!--                    <h3>汽车上下坡问题</h3>-->
+                <p><strong>题目：</strong>小聪一家人暑假决定去西藏自驾游，爸爸行驶到川藏公路时，发现地形较复杂，有一段上下坡。由于上坡需要克服重力，速度较慢，这时小聪看到表盘的速度是 \(40\) km/h，而等到下坡时，在重力的辅助下，速度较快，此时表盘的速度变成了 \(60\) km/h，整个过程用了 \(3\) 小时。旅行几天后小聪一家人准备返程又经过这段公路，上下坡的速度跟原来一样，这时返程用了 \(\frac{13}{4}\) 小时。爸爸问小聪：你可以算一下我们去的时候这段上坡路和下坡路各是多少千米？
+                </p>
+<!--                <p style="margin-top: 15px; font-size: 0.95em; color: #666; font-style: italic;">💡-->
+<!--                    地理应用：我国山区公路（如川藏公路）设计时，工程师需要考虑坡度对车速的影响，确保行车安全。道路坡度通常用百分比表示，如5%表示每100米上升5米。</p>-->
+            </div>
+        </div>
+    </div>
+</section>
+
+<section data-section="2" id="section2">
+    <!--        <div class="container">-->
+    <div class="card">
+        <h2>🎬 上下坡动画演示</h2>
+        <div class="animation-container">
+            <!--                    <div class="animation-title">分步展示汽车通过上下坡的完整过程</div>-->
+            <div class="hill-scene">
+                <div class="sky"></div>
+                <div class="hill-svg-container">
+                    <svg class="hill-svg" preserveAspectRatio="none" viewBox="0 0 1000 200">
+                        <!-- 山坡路径 -->
+                        <path d="M 100,200 L 500,50 L 900,200" fill="#795548" id="hillPath"/>
+                        <!-- 道路路径 -->
+                        <path d="M 100,200 L 500,50 L 900,200" fill="#555" id="roadPath" stroke="none"/>
+                        <!-- 路径标记 -->
+                        <circle cx="100" cy="200" fill="#e74c3c" r="5"/>
+                        <circle cx="500" cy="50" fill="#e74c3c" r="5"/>
+                        <circle cx="900" cy="200" fill="#e74c3c" r="5"/>
+                        <text class="path-marker" text-anchor="middle" x="100" y="190">起点</text>
+                        <text class="path-marker" text-anchor="middle" x="500" y="40">最高点</text>
+                        <text class="path-marker" text-anchor="middle" x="900" y="190">终点</text>
+
+                        <!-- 线段图图层 -->
+                        <g id="diagramOverlay">
+                            <!-- 这里将通过JavaScript添加线段 -->
+                        </g>
+                    </svg>
+                </div>
+                <div class="ground"></div>
+
+                <!-- 汽车 -->
+                <div class="car" id="car">
+                    <div class="car-body"></div>
+                    <div class="car-top"></div>
+                    <div class="wheel front"></div>
+                    <div class="wheel back"></div>
+                </div>
+            </div>
+
+            <div class="info-panel">
+                <div class="info-card">
+                    <div>当前位置</div>
+                    <div class="info-value" id="position">起点</div>
+                </div>
+                <div class="info-card">
+                    <div>当前速度</div>
+                    <div class="info-value" id="speed">0 km/h</div>
+                </div>
+                <div class="info-card">
+                    <div>已用时间</div>
+                    <div class="info-value" id="time">0 小时</div>
+                </div>
+                <div class="info-card">
+                    <div>行驶距离</div>
+                    <div class="info-value" id="distance">0 km</div>
+                </div>
+            </div>
+
+            <!--                <div class="controls-panel">-->
+            <!--                    <h2>控制面板</h2>-->
+            <div class="preset-buttons">
+                <button class="preset-btn active" data-preset="atob" id="presetAtoB">去程</button>
+                <button class="preset-btn" data-preset="btoa" id="presetBtoA">返程</button>
+            </div>
+            <div class="buttons">
+                <button id="startBtn">开始模拟</button>
+                <button disabled id="pauseBtn">暂停</button>
+                <button id="resetBtn">重置</button>
+                <button id="showFormulaBtn">显示数学关系</button>
+            </div>
+
+            <div class="collapsible-section">
+
+                <div class="collapsible-header" id="distanceHeader">
+                    <h3>自定义参数设置</h3>
+                    <span class="collapsible-icon" id="distanceIcon">▼</span>
+                </div>
+
+                <div class="collapsible-content" id="distanceContent">
+                    <div class="controls">
+                        <div class="control-group">
+                            <div class="control-title">上坡速度 (km/h)</div>
+                            <div class="slider-container">
+                                <input class="slider" id="uphillSpeed" max="100" min="10" type="range" value="40">
+                                <span class="slider-value" id="uphillSpeedValue">40</span>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <div class="control-title">下坡速度 (km/h)</div>
+                            <div class="slider-container">
+                                <input class="slider" id="downhillSpeed" max="100" min="10" type="range" value="60">
+                                <span class="slider-value" id="downhillSpeedValue">60</span>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <div class="control-title">上坡距离 (km)</div>
+                            <div class="slider-container">
+                                <input class="slider" id="uphillDistance" max="100" min="10" type="range" value="60">
+                                <span class="slider-value" id="uphillDistanceValue">60</span>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <div class="control-title">下坡距离 (km)</div>
+                            <div class="slider-container">
+                                <input class="slider" id="downhillDistance" max="100" min="10" type="range" value="90">
+                                <span class="slider-value" id="downhillDistanceValue">90</span>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <div class="control-title">时间倍率</div>
+                            <div class="slider-container">
+                                <input class="slider" id="timeRate" max="2000" min="1" type="range" value="2000">
+                                <span class="slider-value" id="timeRateValue">2000x</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section data-section="3" id="section3">
+    <div class="container">
+        <div class="card">
+            <h2>📐 建立二元一次方程组</h2>
+            <div class="step">
+                <span class="step-number">1</span>
+                <strong>设未知数</strong>
+                <p>设去程时的上坡路为 \( x \) 千米，下坡路为 \( y \) 千米。</p>
+            </div>
+
+            <div class="step">
+                <span class="step-number">2</span>
+                <strong>建立方程</strong>
+                <p>去程：上坡时间 \( \frac{x}{40} \) 小时，下坡时间 \( \frac{y}{60} \) 小时</p>
+                <div class="equation">
+                    \[ \frac{x}{40} + \frac{y}{60} = 3 \]
+                </div>
+
+                <p>返程：上坡时间 \( \frac{y}{40} \) 小时（原来的下坡变成上坡），下坡时间 \( \frac{x}{60} \) 小时（原来的上坡变成下坡）</p>
+                <div class="equation">
+                    \[ \frac{y}{40} + \frac{x}{60} = \frac{13}{4} \]
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section data-section="4" id="section4">
+    <div class="container">
+        <div class="card">
+            <h2>🧮 求解二元一次方程组</h2>
+            <div class="step">
+                <span class="step-number">3</span>
+                <strong>解方程组</strong>
+                <p>化简方程组：</p>
+                <div class="equation">
+                    \[
+                    \begin{cases}
+                    3x + 2y = 360 \\
+                    2x + 3y = 390
+                    \end{cases}
+                    \]
+                </div>
+
+                <p>解得：</p>
+                <div class="equation">
+                    \[
+                    \begin{cases}
+                    x = 60 \\
+                    y = 90
+                    \end{cases}
+                    \]
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // 获取DOM元素
+        const car = document.getElementById('car');
+        const hillPath = document.getElementById('hillPath');
+        const diagramOverlay = document.getElementById('diagramOverlay');
+        const positionElement = document.getElementById('position');
+        const speedElement = document.getElementById('speed');
+        const timeElement = document.getElementById('time');
+        const distanceElement = document.getElementById('distance');
+
+        const uphillSpeedSlider = document.getElementById('uphillSpeed');
+        const downhillSpeedSlider = document.getElementById('downhillSpeed');
+        const uphillDistanceSlider = document.getElementById('uphillDistance');
+        const downhillDistanceSlider = document.getElementById('downhillDistance');
+        const timeRateSlider = document.getElementById('timeRate');
+
+        const uphillSpeedValue = document.getElementById('uphillSpeedValue');
+        const downhillSpeedValue = document.getElementById('downhillSpeedValue');
+        const uphillDistanceValue = document.getElementById('uphillDistanceValue');
+        const downhillDistanceValue = document.getElementById('downhillDistanceValue');
+        const timeRateValue = document.getElementById('timeRateValue');
+
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const showFormulaBtn = document.getElementById('showFormulaBtn');
+
+        // 可折叠区域相关元素
+        const distanceHeader = document.getElementById('distanceHeader');
+        const distanceContent = document.getElementById('distanceContent');
+        const distanceIcon = document.getElementById('distanceIcon');
+        const presetAtoB = document.getElementById('presetAtoB');
+        const presetBtoA = document.getElementById('presetBtoA');
+
+        // 状态变量
+        let animationId = null;
+        let isAnimating = false;
+        let isPaused = false;
+        let lastTimestamp = 0;
+        let currentPosition = 0; // 0-1 表示位置比例
+        let currentDistance = 0; // 已行驶距离(km)
+        let currentTime = 0; // 已用时间(小时)
+        let timeRate = 2000; // 时间倍率，默认2000倍
+        let showFormula = false; // 是否显示数学关系
+
+        // 山坡路径参数
+        const pathStartX = 100;
+        const pathPeakX = 500;
+        const pathEndX = 900;
+        const pathStartY = 200;
+        const pathPeakY = 50;
+        const pathEndY = 200;
+
+        // 更新滑块显示值
+        function updateSliderValues() {
+            uphillSpeedValue.textContent = uphillSpeedSlider.value;
+            downhillSpeedValue.textContent = downhillSpeedSlider.value;
+            uphillDistanceValue.textContent = uphillDistanceSlider.value;
+            downhillDistanceValue.textContent = downhillDistanceSlider.value;
+            timeRateValue.textContent = `${timeRateSlider.value}x`;
+            timeRate = parseInt(timeRateSlider.value);
+        }
+
+        // 初始化滑块值
+        updateSliderValues();
+
+        // 设置时间倍率默认值为2000
+        timeRateSlider.value = 2000;
+        timeRate = 2000;
+        timeRateValue.textContent = '2000x';
+
+        // 可折叠区域展开/收起
+        let isDistanceExpanded = false;
+        distanceHeader.addEventListener('click', function () {
+            isDistanceExpanded = !isDistanceExpanded;
+            if (isDistanceExpanded) {
+                distanceContent.classList.add('expanded');
+                distanceIcon.textContent = '▲';
+            } else {
+                distanceContent.classList.remove('expanded');
+                distanceIcon.textContent = '▼';
+            }
+        });
+
+        // 预设按钮事件
+        presetAtoB.addEventListener('click', function () {
+            presetAtoB.classList.add('active');
+            presetBtoA.classList.remove('active');
+            // 去程：上坡距离x=60，下坡距离y=90
+            uphillDistanceSlider.value = 60;
+            downhillDistanceSlider.value = 90;
+            updateSliderValues();
+            // 重置动画位置和状态
+            currentPosition = 0;
+            currentDistance = 0;
+            currentTime = 0;
+            isAnimating = false;
+            isPaused = false;
+            lastTimestamp = 0;
+            cancelAnimationFrame(animationId);
+            updateCarPosition();
+            updateInfoPanel(currentPosition, 0, 0);
+            if (showFormula) updateDiagram();
+            // 重置按钮状态
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+            pauseBtn.textContent = "暂停";
+        });
+
+        presetBtoA.addEventListener('click', function () {
+            presetBtoA.classList.add('active');
+            presetAtoB.classList.remove('active');
+            // 返程：上坡距离y=90（原来的下坡），下坡距离x=60（原来的上坡）
+            uphillDistanceSlider.value = 90;
+            downhillDistanceSlider.value = 60;
+            updateSliderValues();
+            // 重置动画位置和状态（从右往左，所以位置从1开始）
+            currentPosition = 1;
+            currentDistance = 0;
+            currentTime = 0;
+            isAnimating = false;
+            isPaused = false;
+            lastTimestamp = 0;
+            cancelAnimationFrame(animationId);
+            updateCarPosition();
+            updateInfoPanel(currentPosition, 0, 0);
+            if (showFormula) updateDiagram();
+            // 重置按钮状态
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+            pauseBtn.textContent = "暂停";
+        });
+
+        // 滑块事件监听
+        uphillSpeedSlider.addEventListener('input', function () {
+            updateSliderValues();
+            if (showFormula) updateDiagram();
+        });
+        downhillSpeedSlider.addEventListener('input', function () {
+            updateSliderValues();
+            if (showFormula) updateDiagram();
+        });
+        uphillDistanceSlider.addEventListener('input', function () {
+            updateSliderValues();
+            if (showFormula) updateDiagram();
+        });
+        downhillDistanceSlider.addEventListener('input', function () {
+            updateSliderValues();
+            if (showFormula) updateDiagram();
+        });
+        timeRateSlider.addEventListener('input', function () {
+            updateSliderValues();
+        });
+
+        // 显示数学关系按钮
+        showFormulaBtn.addEventListener('click', function () {
+            showFormula = !showFormula;
+            this.textContent = showFormula ? "隐藏数学关系" : "显示数学关系";
+            updateDiagram();
+        });
+
+        // 获取当前速度(基于位置)
+        function getCurrentSpeed(position) {
+            const totalDistance = parseFloat(uphillDistanceSlider.value) + parseFloat(downhillDistanceSlider.value);
+            const uphillRatio = parseFloat(uphillDistanceSlider.value) / totalDistance;
+
+            // 获取当前预设方向
+            const currentPreset = document.querySelector('.preset-btn.active')?.getAttribute('data-preset') || 'atob';
+            const isBtoA = currentPreset === 'btoa';
+
+            let actualPosition = position;
+            if (isBtoA) {
+                // 从右往左：反转位置
+                actualPosition = 1 - position;
+            }
+
+            if (actualPosition <= uphillRatio) {
+                // 上坡段
+                return parseFloat(uphillSpeedSlider.value);
+            } else {
+                // 下坡段
+                return parseFloat(downhillSpeedSlider.value);
+            }
+        }
+
+
+        // 根据位置计算已行驶距离
+        function calculateDistanceFromPosition(position) {
+            const totalDistance = parseFloat(uphillDistanceSlider.value) + parseFloat(downhillDistanceSlider.value);
+            const uphillRatio = parseFloat(uphillDistanceSlider.value) / totalDistance;
+
+            // 获取当前预设方向
+            const currentPreset = document.querySelector('.preset-btn.active')?.getAttribute('data-preset') || 'atob';
+            const isBtoA = currentPreset === 'btoa';
+
+            let actualPosition = position;
+            if (isBtoA) {
+                // 从右往左：反转位置
+                actualPosition = 1 - position;
+            }
+
+            // 根据位置计算已行驶距离
+            const traveledDistance = actualPosition * totalDistance;
+            return traveledDistance;
+        }
+
+        // 根据距离计算时间
+        function calculateTimeFromDistance(position) {
+            const totalDistance = parseFloat(uphillDistanceSlider.value) + parseFloat(downhillDistanceSlider.value);
+            const uphillDistance = parseFloat(uphillDistanceSlider.value);
+            const downhillDistance = parseFloat(downhillDistanceSlider.value);
+            const uphillSpeed = parseFloat(uphillSpeedSlider.value);
+            const downhillSpeed = parseFloat(downhillSpeedSlider.value);
+            const uphillRatio = uphillDistance / totalDistance;
+
+            // 获取当前预设方向
+            const currentPreset = document.querySelector('.preset-btn.active')?.getAttribute('data-preset') || 'atob';
+            const isBtoA = currentPreset === 'btoa';
+
+            let actualPosition = position;
+            if (isBtoA) {
+                // 从右往左：反转位置
+                actualPosition = 1 - position;
+            }
+
+            let uphillDistTraveled = 0;
+            let downhillDistTraveled = 0;
+
+            if (actualPosition <= uphillRatio) {
+                // 还在上坡段
+                uphillDistTraveled = actualPosition * totalDistance;
+                downhillDistTraveled = 0;
+            } else {
+                // 已经进入下坡段
+                uphillDistTraveled = uphillDistance;
+                downhillDistTraveled = (actualPosition - uphillRatio) * totalDistance;
+            }
+
+            // 计算时间：时间 = 距离 / 速度
+            const uphillTime = uphillDistTraveled / uphillSpeed;
+            const downhillTime = downhillDistTraveled / downhillSpeed;
+            const totalTime = uphillTime + downhillTime;
+
+            return totalTime;
+        }
+
+        // 更新信息面板
+        function updateInfoPanel(position, distance, time) {
+            const totalDistance = parseFloat(uphillDistanceSlider.value) + parseFloat(downhillDistanceSlider.value);
+            const uphillRatio = parseFloat(uphillDistanceSlider.value) / totalDistance;
+
+            // 获取当前预设方向
+            const currentPreset = document.querySelector('.preset-btn.active')?.getAttribute('data-preset') || 'atob';
+            const isBtoA = currentPreset === 'btoa';
+
+            let actualPosition = position;
+            if (isBtoA) {
+                // 从右往左：反转位置
+                actualPosition = 1 - position;
+            }
+
+            // 更新位置
+            if (position < 0.01 || position > 0.99) {
+                if (isBtoA) {
+                    positionElement.textContent = position < 0.01 ? "终点" : "起点";
+                } else {
+                    positionElement.textContent = position < 0.01 ? "起点" : "终点";
+                }
+            } else if (actualPosition <= uphillRatio) {
+                positionElement.textContent = "上坡中";
+            } else {
+                positionElement.textContent = "下坡中";
+            }
+
+            // 更新速度
+            speedElement.textContent = `${getCurrentSpeed(position)} km/h`;
+
+            // 根据实际位置计算距离和时间，而不是使用累加的值
+            const calculatedDistance = calculateDistanceFromPosition(position);
+            const calculatedTime = calculateTimeFromDistance(position);
+
+            // 更新时间和距离
+            timeElement.textContent = `${calculatedTime.toFixed(2)} 小时`;
+            distanceElement.textContent = `${calculatedDistance.toFixed(1)} km`;
+        }
+
+        // 更新数学关系显示
+        function updateDiagram() {
+            // 清除现有内容
+            diagramOverlay.innerHTML = '';
+
+            if (!showFormula) return;
+
+            const svgNS = "http://www.w3.org/2000/svg";
+            const uphillDist = parseFloat(uphillDistanceSlider.value);
+            const downhillDist = parseFloat(downhillDistanceSlider.value);
+            const uphillSpeed = parseFloat(uphillSpeedSlider.value);
+            const downhillSpeed = parseFloat(downhillSpeedSlider.value);
+
+            // 计算上坡和下坡的时间
+            const uphillTime = uphillDist / uphillSpeed;
+            const downhillTime = downhillDist / downhillSpeed;
+            const totalTime = uphillTime + downhillTime;
+
+            // 根据当前预设确定方向
+            const currentPreset = document.querySelector('.preset-btn.active')?.getAttribute('data-preset') || 'atob';
+            const isBtoA = currentPreset === 'btoa';
+
+            // 上坡段公式显示
+            let uphillMidX, uphillMidY;
+            if (isBtoA) {
+                // 乙到甲：上坡在右侧（从右往左）
+                uphillMidX = (pathPeakX + pathEndX) / 2;
+                uphillMidY = (pathPeakY + pathEndY) / 2;
+            } else {
+                // 甲到乙：上坡在左侧（从左往右）
+                uphillMidX = (pathStartX + pathPeakX) / 2;
+                uphillMidY = (pathStartY + pathPeakY) / 2;
+            }
+
+            // 上坡公式背景
+            const uphillBg = document.createElementNS(svgNS, "rect");
+            uphillBg.setAttribute("class", "formula-background");
+            uphillBg.setAttribute("x", uphillMidX - 140);
+            uphillBg.setAttribute("y", uphillMidY - 35);
+            uphillBg.setAttribute("width", "280");
+            uphillBg.setAttribute("height", "70");
+            diagramOverlay.appendChild(uphillBg);
+
+            // 上坡公式文本
+            const uphillFormula = document.createElementNS(svgNS, "text");
+            uphillFormula.setAttribute("class", "formula-text");
+            uphillFormula.setAttribute("x", uphillMidX);
+            uphillFormula.setAttribute("y", uphillMidY +15);
+            uphillFormula.setAttribute("text-anchor", "middle");
+            uphillFormula.setAttribute("font-size", "18px");
+            if (isBtoA) {
+                uphillFormula.textContent = `上坡时间: t₁ = y/${uphillSpeed}`;
+            } else {
+                uphillFormula.textContent = `上坡时间: t₁ = x/${uphillSpeed}`;
+            }
+            diagramOverlay.appendChild(uphillFormula);
+
+            const uphillFormula2 = document.createElementNS(svgNS, "text");
+            uphillFormula2.setAttribute("class", "formula-text");
+            uphillFormula2.setAttribute("x", uphillMidX);
+            uphillFormula2.setAttribute("y", uphillMidY -10);
+            uphillFormula2.setAttribute("text-anchor", "middle");
+            uphillFormula2.setAttribute("font-size", "16px");
+            if (isBtoA) {
+                uphillFormula2.textContent = `上坡距离: y (未知)`;
+            } else {
+                uphillFormula2.textContent = `上坡距离: x (未知)`;
+            }
+            diagramOverlay.appendChild(uphillFormula2);
+
+            // 下坡段公式显示
+            let downhillMidX, downhillMidY;
+            if (isBtoA) {
+                // 乙到甲：下坡在左侧（从右往左）
+                downhillMidX = (pathStartX + pathPeakX) / 2;
+                downhillMidY = (pathStartY + pathPeakY) / 2;
+            } else {
+                // 甲到乙：下坡在右侧（从左往右）
+                downhillMidX = (pathPeakX + pathEndX) / 2;
+                downhillMidY = (pathPeakY + pathEndY) / 2;
+            }
+
+            // 下坡公式背景
+            const downhillBg = document.createElementNS(svgNS, "rect");
+            downhillBg.setAttribute("class", "formula-background");
+            downhillBg.setAttribute("x", downhillMidX - 140);
+            downhillBg.setAttribute("y", downhillMidY - 35);
+            downhillBg.setAttribute("width", "280");
+            downhillBg.setAttribute("height", "70");
+            diagramOverlay.appendChild(downhillBg);
+
+            // 下坡公式文本
+            const downhillFormula = document.createElementNS(svgNS, "text");
+            downhillFormula.setAttribute("class", "formula-text");
+            downhillFormula.setAttribute("x", downhillMidX);
+            downhillFormula.setAttribute("y", downhillMidY + 15);
+            downhillFormula.setAttribute("text-anchor", "middle");
+            downhillFormula.setAttribute("font-size", "18px");
+            if (isBtoA) {
+                downhillFormula.textContent = `下坡时间: t₂ = x/${downhillSpeed}`;
+            } else {
+                downhillFormula.textContent = `下坡时间: t₂ = y/${downhillSpeed}`;
+            }
+            diagramOverlay.appendChild(downhillFormula);
+
+            const downhillFormula2 = document.createElementNS(svgNS, "text");
+            downhillFormula2.setAttribute("class", "formula-text");
+            downhillFormula2.setAttribute("x", downhillMidX);
+            downhillFormula2.setAttribute("y", downhillMidY - 10);
+            downhillFormula2.setAttribute("text-anchor", "middle");
+            downhillFormula2.setAttribute("font-size", "16px");
+            if (isBtoA) {
+                downhillFormula2.textContent = `下坡距离: x (未知)`;
+            } else {
+                downhillFormula2.textContent = `下坡距离: y (未知)`;
+            }
+            diagramOverlay.appendChild(downhillFormula2);
+
+            // 总时间公式显示在顶部
+            const totalFormulaBg = document.createElementNS(svgNS, "rect");
+            totalFormulaBg.setAttribute("class", "formula-background");
+            totalFormulaBg.setAttribute("x", pathPeakX - 200);
+            totalFormulaBg.setAttribute("y", pathPeakY - 50);
+            totalFormulaBg.setAttribute("width", "400");
+            totalFormulaBg.setAttribute("height", "80");
+            diagramOverlay.appendChild(totalFormulaBg);
+
+            // 根据当前预设显示不同的总时间公式
+            let totalTimeFormula = '';
+            let formulaY = pathPeakY - 15;
+
+            if (isBtoA) {
+                // 返程：y/40 + x/60 = 13/4
+                totalTimeFormula = `返程: t₁ + t₂ = y/${uphillSpeed} + x/${downhillSpeed} = 13/4`;
+            } else {
+                // 去程：x/40 + y/60 = 3
+                totalTimeFormula = `去程: t₁ + t₂ = x/${uphillSpeed} + y/${downhillSpeed} = 3`;
+            }
+
+            const totalFormula = document.createElementNS(svgNS, "text");
+            totalFormula.setAttribute("class", "formula-text");
+            totalFormula.setAttribute("x", pathPeakX);
+            totalFormula.setAttribute("y", formulaY);
+            totalFormula.setAttribute("text-anchor", "middle");
+            totalFormula.setAttribute("font-size", "16px");
+            totalFormula.textContent = totalTimeFormula;
+            diagramOverlay.appendChild(totalFormula);
+
+            // 添加说明文字
+            const noteText = document.createElementNS(svgNS, "text");
+            noteText.setAttribute("class", "formula-text");
+            noteText.setAttribute("x", pathPeakX);
+            noteText.setAttribute("y", formulaY + 20);
+            noteText.setAttribute("text-anchor", "middle");
+            noteText.setAttribute("font-size", "13px");
+            noteText.setAttribute("fill", "#666");
+            noteText.textContent = "注：x和y是未知数，需要通过方程组求解";
+            diagramOverlay.appendChild(noteText);
+        }
+
+        // 动画函数
+        function animate(timestamp) {
+            if (!lastTimestamp) lastTimestamp = timestamp;
+
+            const elapsedSeconds = (timestamp - lastTimestamp) / 1000;
+            lastTimestamp = timestamp;
+
+            if (isAnimating && !isPaused) {
+                // 获取当前预设方向
+                const currentPreset = document.querySelector('.preset-btn.active')?.getAttribute('data-preset') || 'atob';
+                const isBtoA = currentPreset === 'btoa';
+
+                // 计算当前速度
+                const currentSpeed = getCurrentSpeed(currentPosition);
+
+                // 计算移动的距离(km)，应用时间倍率
+                const distanceIncrement = (currentSpeed * elapsedSeconds * timeRate) / 3600;
+
+                // 更新位置
+                const totalDistance = parseFloat(uphillDistanceSlider.value) + parseFloat(downhillDistanceSlider.value);
+
+                if (isBtoA) {
+                    // 从右往左：位置递减
+                    currentPosition -= distanceIncrement / totalDistance;
+                    if (currentPosition <= 0) {
+                        currentPosition = 0;
+                        isAnimating = false;
+                        startBtn.disabled = false;
+                        pauseBtn.disabled = true;
+                        pauseBtn.textContent = "暂停";
+                        isPaused = false;
+                    }
+                } else {
+                    // 从左往右：位置递增
+                    currentPosition += distanceIncrement / totalDistance;
+                    if (currentPosition >= 1) {
+                        currentPosition = 1;
+                        isAnimating = false;
+                        startBtn.disabled = false;
+                        pauseBtn.disabled = true;
+                        pauseBtn.textContent = "暂停";
+                        isPaused = false;
+                    }
+                }
+
+                currentDistance += distanceIncrement;
+                currentTime += (elapsedSeconds * timeRate) / 3600;
+
+                // 更新汽车位置和角度
+                updateCarPosition();
+
+                // 更新信息面板
+                updateInfoPanel(currentPosition, currentDistance, currentTime);
+
+                // 更新数学关系显示
+                updateDiagram();
+            }
+
+            // 继续动画
+            if (isAnimating) {
+                animationId = requestAnimationFrame(animate);
+            }
+        }
+
+        // 更新汽车位置和角度
+        function updateCarPosition() {
+            const hillScene = document.querySelector('.hill-scene');
+            const hillWidth = hillScene.offsetWidth;
+            const hillHeight = hillScene.offsetHeight;
+
+            // 获取当前预设方向
+            const currentPreset = document.querySelector('.preset-btn.active')?.getAttribute('data-preset') || 'atob';
+            const isBtoA = currentPreset === 'btoa';
+
+            // 计算当前点在路径上的位置
+            const totalDistance = parseFloat(uphillDistanceSlider.value) + parseFloat(downhillDistanceSlider.value);
+            const uphillRatio = parseFloat(uphillDistanceSlider.value) / totalDistance;
+
+            let pointX, pointY;
+            let actualPosition = currentPosition;
+
+            if (isBtoA) {
+                // 从右往左：反转位置
+                actualPosition = 1 - currentPosition;
+            }
+
+            if (actualPosition <= uphillRatio) {
+                // 上坡段
+                const progress = actualPosition / uphillRatio;
+                if (isBtoA) {
+                    // 从右往左：从终点到起点
+                    pointX = pathEndX - (pathEndX - pathPeakX) * progress;
+                    pointY = pathEndY - (pathEndY - pathPeakY) * progress;
+                } else {
+                    // 从左往右：从起点到顶点
+                    pointX = pathStartX + (pathPeakX - pathStartX) * progress;
+                    pointY = pathStartY + (pathPeakY - pathStartY) * progress;
+                }
+            } else {
+                // 下坡段
+                const progress = (actualPosition - uphillRatio) / (1 - uphillRatio);
+                if (isBtoA) {
+                    // 从右往左：从顶点到起点
+                    pointX = pathPeakX - (pathPeakX - pathStartX) * progress;
+                    pointY = pathPeakY - (pathPeakY - pathStartY) * progress;
+                } else {
+                    // 从左往右：从顶点到终点
+                    pointX = pathPeakX + (pathEndX - pathPeakX) * progress;
+                    pointY = pathPeakY + (pathEndY - pathPeakY) * progress;
+                }
+            }
+
+            // 计算斜率/角度
+            let slope, angle;
+
+            if (actualPosition <= uphillRatio) {
+                // 上坡段
+                if (isBtoA) {
+                    // 从右往左：计算从终点到顶点的斜率（方向相反）
+                    slope = (pathPeakY - pathEndY) / (pathPeakX - pathEndX);
+                } else {
+                    slope = (pathPeakY - pathStartY) / (pathPeakX - pathStartX);
+                }
+            } else {
+                // 下坡段
+                if (isBtoA) {
+                    // 从右往左：计算从顶点到起点的斜率（方向相反）
+                    slope = (pathStartY - pathPeakY) / (pathStartX - pathPeakX);
+                } else {
+                    slope = (pathEndY - pathPeakY) / (pathEndX - pathPeakX);
+                }
+            }
+
+            angle = Math.atan(slope) * 180 / Math.PI;
+
+            // 从右往左时，水平翻转汽车，而不是旋转180度
+            let transform = `rotate(${angle}deg)`;
+            if (isBtoA) {
+                transform += ` scaleX(-1)`;
+            }
+
+            // 更新汽车位置和旋转
+            // 将SVG坐标转换为像素坐标
+            const carX = (pointX / 1000) * hillWidth - 40; // 减去汽车宽度的一半使其居中
+            const carY = (pointY / 200) * (hillHeight * 0.7) - 20; // 调整Y坐标计算
+
+            car.style.left = `${carX}px`;
+            car.style.top = `${carY}px`;
+            car.style.transform = transform;
+        }
+
+// 初始化汽车位置
+        function initializeCarPosition() {
+            const hillScene = document.querySelector('.hill-scene');
+            const hillWidth = hillScene.offsetWidth;
+            const hillHeight = hillScene.offsetHeight;
+
+            // 设置初始位置在起点
+            const startX = (pathStartX / 1000) * hillWidth - 40;
+            const startY = (pathStartY / 200) * (hillHeight * 0.7) - 20;
+
+            car.style.left = `${startX}px`;
+            car.style.top = `${startY}px`;
+            car.style.transform = 'rotate(0deg)';
+        }
+
+        // 开始动画
+        startBtn.addEventListener('click', function () {
+            if (!isAnimating) {
+                isAnimating = true;
+                isPaused = false;
+                lastTimestamp = 0;
+                startBtn.disabled = true;
+                pauseBtn.disabled = false;
+                animationId = requestAnimationFrame(animate);
+            }
+        });
+
+        // 暂停/继续动画
+        pauseBtn.addEventListener('click', function () {
+            if (isAnimating) {
+                if (isPaused) {
+                    // 继续动画
+                    isPaused = false;
+                    pauseBtn.textContent = "暂停";
+                    lastTimestamp = 0;
+                    animationId = requestAnimationFrame(animate);
+                } else {
+                    // 暂停动画
+                    isPaused = true;
+                    pauseBtn.textContent = "继续";
+                }
+            }
+        });
+
+        // 重置动画
+        resetBtn.addEventListener('click', function () {
+            isAnimating = false;
+            isPaused = false;
+            currentDistance = 0;
+            currentTime = 0;
+
+            // 根据当前预设设置初始位置
+            const currentPreset = document.querySelector('.preset-btn.active')?.getAttribute('data-preset') || 'atob';
+            if (currentPreset === 'btoa') {
+                currentPosition = 1; // 从右往左，从1开始
+            } else {
+                currentPosition = 0; // 从左往右，从0开始
+            }
+
+            cancelAnimationFrame(animationId);
+
+            // 重置汽车位置
+            updateCarPosition();
+
+            // 重置信息面板
+            updateInfoPanel(currentPosition, 0, 0);
+
+            // 更新数学关系显示
+            updateDiagram();
+
+            // 重置按钮状态
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+            pauseBtn.textContent = "暂停";
+        });
+
+        // 初始化信息面板
+        updateInfoPanel(0, 0, 0);
+        updateCarPosition();
+        updateDiagram();
+
+        // 渲染数学公式
+        if (typeof renderMathInElement !== 'undefined') {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: '\\(', right: '\\)', display: false},
+                    {left: '\\[', right: '\\]', display: true}
+                ]
+            });
+        }
+    });
+</script>
+<script src="navigation.js"></script>
+</body>
+</html>
